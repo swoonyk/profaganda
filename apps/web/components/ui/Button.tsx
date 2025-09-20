@@ -17,7 +17,6 @@ const baseStyle: React.CSSProperties = {
   transition: "120ms ease-out",
   outline: "none",
   display: "inline-block",
-  boxShadow: "0 6px 0 #007658",
   height: "61px",
   width: "300px",
   fontSize: "24px",
@@ -38,6 +37,7 @@ const variantStyles: Record<ButtonVariant, React.CSSProperties> = {
   primary: {
     backgroundColor: "#0AD6A1",
     color: "#000",
+    boxShadow: "0 6px 0 #007658",
   },
   secondary: {
     backgroundColor: "#ffffff",
@@ -45,13 +45,12 @@ const variantStyles: Record<ButtonVariant, React.CSSProperties> = {
     boxShadow: "0 6px 0 #A6A6A6",
   },
 };
-
 const hoverStyles: Record<ButtonVariant, React.CSSProperties> = {
   primary: {
-    // backgroundColor: "#1d4ed8",
+    backgroundColor: "#09af83ff",
   },
   secondary: {
-    // backgroundColor: "#e5e7eb",
+    backgroundColor: "#cfd1d6ff",
   },
 };
 

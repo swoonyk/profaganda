@@ -4,9 +4,9 @@ import Home from "./phases/Home";
 
 function App() {
   return (
-    <div>
+    <>
       <GameWindow />
-    </div>
+    </>
   );
 }
 

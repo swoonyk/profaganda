@@ -8,13 +8,17 @@ import End from "./phases/End";
 export interface Player {
   name: string;
   points: number;
+  yourself?: boolean; // <-- Add this line
 }
 
 type GamePhase = "home" | "lobby" | "round" | "leaderboard" | "end";
 
 export default function GameWindow() {
   const [currentView, setCurrentView] = useState<GamePhase>("home");
-  const [players, setPlayers] = useState<Player[]>([]);
+  const [players, setPlayers] = useState<Player[]>([
+    { name: "Alice", points: 0, yourself: true },
+    { name: "Bob", points: 0 },
+  ]);
   const [roundNumber, setRoundNumber] = useState(1);
   const maxRounds = 5;
 
@@ -40,7 +44,7 @@ export default function GameWindow() {
   };
 
   return (
-    <div>
+    <>
       {currentView === "home" && <Home onStartLobby={startLobby} />}
       {currentView === "lobby" && (
         <Lobby players={players} onStart={() => setCurrentView("round")} />
@@ -59,6 +63,6 @@ export default function GameWindow() {
         />
       )}
       {currentView === "end" && <End players={players} />}
-    </div>
+    </>
   );
 }
