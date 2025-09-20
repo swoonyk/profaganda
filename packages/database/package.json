@@ -1,0 +1,29 @@
+{
+  "name": "@profaganda/database",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "clean": "rm -rf dist",
+    "type-check": "tsc --noEmit",
+    "migrate": "tsx src/migrations/run.ts"
+  },
+  "dependencies": {
+    "pg": "^8.11.3",
+    "@profaganda/shared": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/pg": "^8.10.9",
+    "tsx": "^4.7.0",
+    "typescript": "^5.8.2"
+  }
+}

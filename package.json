@@ -16,5 +16,25 @@
   },
   "devDependencies": {
     "socket.io-client": "^4.8.1"
+  },
+  "name": "profaganda-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "packageManager": "pnpm@8.0.0",
+  "scripts": {
+    "dev": "pnpm --parallel --recursive dev",
+    "build": "pnpm --recursive build",
+    "start": "pnpm --parallel --recursive start",
+    "lint": "pnpm --recursive lint",
+    "clean": "pnpm --recursive clean",
+    "type-check": "pnpm --recursive type-check",
+    "web:dev": "pnpm --filter web dev",
+    "api:dev": "pnpm --filter api dev",
+    "pipeline:dev": "pnpm --filter pipeline dev"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.2",
+    "@types/node": "^22.13.11"
   }
 }
+
