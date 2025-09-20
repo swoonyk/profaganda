@@ -1,44 +1,68 @@
-import React, { ButtonHTMLAttributes, ReactNode } from 'react';
+import React, { ButtonHTMLAttributes, ReactNode } from "react";
+
+type ButtonVariant = "primary" | "secondary";
 
 type ButtonProps = {
-    children: ReactNode;
-    className?: string;
+  children: ReactNode;
+  className?: string;
+  variant?: ButtonVariant;
 } & ButtonHTMLAttributes<HTMLButtonElement>;
 
-const buttonStyle: React.CSSProperties = {
-    padding: '0.5rem 1.25rem',
-    backgroundColor: '#2563eb',
-    color: '#fff',
-    border: 'none',
-    borderRadius: '0.375rem',
-    fontSize: '1rem',
-    fontWeight: 500,
-    cursor: 'pointer',
-    transition: 'background 0.2s',
-    outline: 'none',
-    display: 'inline-block',
+const baseStyle: React.CSSProperties = {
+  padding: "0.5rem 1.25rem",
+  border: "none",
+  borderRadius: "0.375rem",
+  fontSize: "1rem",
+  fontWeight: 500,
+  cursor: "pointer",
+  transition: "background 0.2s",
+  outline: "none",
+  display: "inline-block",
 };
 
-const hoverStyle: React.CSSProperties = {
-    backgroundColor: '#1d4ed8',
+const variantStyles: Record<ButtonVariant, React.CSSProperties> = {
+  primary: {
+    backgroundColor: "#0AD6A1",
+    color: "#000",
+  },
+  secondary: {
+    backgroundColor: "#ffffff",
+    color: "#000000",
+  },
+};
+
+const hoverStyles: Record<ButtonVariant, React.CSSProperties> = {
+  primary: {
+    backgroundColor: "#1d4ed8",
+  },
+  secondary: {
+    backgroundColor: "#e5e7eb",
+  },
 };
 
 export const Button: React.FC<ButtonProps> = ({
-    children,
-    className,
-    ...props
+  children,
+  className,
+  variant = "primary",
+  ...props
 }) => {
-    const [hover, setHover] = React.useState(false);
+  const [hover, setHover] = React.useState(false);
 
-    return (
-        <button
-            style={hover ? { ...buttonStyle, ...hoverStyle } : buttonStyle}
-            className={className}
-            onMouseEnter={() => setHover(true)}
-            onMouseLeave={() => setHover(false)}
-            {...props}
-        >
-            {children}
-        </button>
-    );
+  const style = {
+    ...baseStyle,
+    ...variantStyles[variant],
+    ...(hover ? hoverStyles[variant] : {}),
+  };
+
+  return (
+    <button
+      style={style}
+      className={className}
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
+      {...props}
+    >
+      {children}
+    </button>
+  );
 };
