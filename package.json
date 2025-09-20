@@ -7,7 +7,11 @@
   "packageManager": "pnpm@10.17.0",
   "scripts": {
     "dev": "pnpm --parallel --recursive dev",
-    "build": "pnpm --recursive build"
+    "build": "pnpm --recursive build",
+    "pipeline:ingest": "pnpm --filter pipeline start ingest",
+    "pipeline:stats": "pnpm --filter pipeline start stats", 
+    "api:dev": "pnpm --filter api dev",
+    "db:migrate": "pnpm --filter database migrate"
   },
   "keywords": [],
   "author": "",

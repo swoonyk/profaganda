@@ -1,29 +1,40 @@
-import { Pool } from 'pg';
+import { MongoClient, Db } from 'mongodb';
 
-let pool: Pool | null = null;
+let client: MongoClient | null = null;
+let database: Db | null = null;
 
-export function createPool(databaseUrl: string): Pool {
-  if (!pool) {
-    pool = new Pool({
-      connectionString: databaseUrl,
-      max: 20,
-      idleTimeoutMillis: 30000,
-      connectionTimeoutMillis: 2000,
+export async function connectToMongoDB(uri: string, dbName: string = 'profaganda'): Promise<Db> {
+  if (!client) {
+    client = new MongoClient(uri, {
+      maxPoolSize: 20,
+      minPoolSize: 5,
+      maxIdleTimeMS: 30000,
+      serverSelectionTimeoutMS: 5000,
     });
+    
+    await client.connect();
+    console.log('✅ Connected to MongoDB Atlas');
   }
-  return pool;
+  
+  if (!database) {
+    database = client.db(dbName);
+  }
+  
+  return database;
 }
 
-export function getPool(): Pool {
-  if (!pool) {
-    throw new Error('Database pool not initialized. Call createPool first.');
+export function getDatabase(): Db {
+  if (!database) {
+    throw new Error('Database not initialized. Call connectToMongoDB first.');
   }
-  return pool;
+  return database;
 }
 
-export async function closePool(): Promise<void> {
-  if (pool) {
-    await pool.end();
-    pool = null;
+export async function closeConnection(): Promise<void> {
+  if (client) {
+    await client.close();
+    client = null;
+    database = null;
+    console.log('✅ MongoDB connection closed');
   }
 }

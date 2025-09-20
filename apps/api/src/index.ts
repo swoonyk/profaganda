@@ -1,7 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
-import { createPool, createDatabaseQueries } from '@profaganda/database';
+import { connectToMongoDB, createDatabaseQueries, closeConnection } from '@profaganda/database';
 import type { RandomReviewsResponse, ProfessorReviewsResponse } from '@profaganda/shared';
 
 const app = express();
@@ -11,14 +11,25 @@ app.use(helmet());
 app.use(cors());
 app.use(express.json());
 
-const databaseUrl = process.env.DATABASE_URL;
-if (!databaseUrl) {
-  console.error('DATABASE_URL environment variable is required');
+const mongodbUri = process.env.MONGODB_URI;
+if (!mongodbUri) {
+  console.error('MONGODB_URI environment variable is required');
   process.exit(1);
 }
 
-const pool = createPool(databaseUrl);
-const dbQueries = create
+let dbQueries: any;
+
+// Initialize database connection
+(async () => {
+  try {
+    const db = await connectToMongoDB(mongodbUri);
+    dbQueries = createDatabaseQueries(db);
+    console.log('✅ Database connected and ready');
+  } catch (error) {
+    console.error('❌ Failed to connect to database:', error);
+    process.exit(1);
+  }
+})();
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
@@ -52,8 +63,8 @@ app.get('/reviews/by-professor/:id', async (req, res) => {
   try {
     const professorId = req.params.id;
     
-    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-    if (!uuidRegex.test(professorId)) {
+    const objectIdRegex = /^[0-9a-fA-F]{24}$/;
+    if (!objectIdRegex.test(professorId)) {
       return res.status(400).json({ 
         error: 'Invalid professor ID format' 
       });
@@ -83,20 +94,46 @@ app.get('/reviews/by-professor/:id', async (req, res) => {
 });
 app.get('/professors', async (req, res) => {
   try {
-    const result = await pool.query(`
-      SELECT DISTINCT p.id, p.internal_code, p.source, p.created_at, COUNT(r.id) as review_count
-      FROM professors p
-      INNER JOIN reviews r ON p.id = r.professor_id
-      GROUP BY p.id, p.internal_code, p.source, p.created_at
-      ORDER BY review_count DESC
-    `);
+    if (!dbQueries) {
+      return res.status(503).json({ error: 'Database not ready' });
+    }
+
+    // Get professors with at least one review using MongoDB aggregation
+    const db = dbQueries.db || (await connectToMongoDB(mongodbUri));
+    const result = await db.collection('professors').aggregate([
+      {
+        $lookup: {
+          from: 'reviews',
+          localField: '_id',
+          foreignField: 'professor_id',
+          as: 'reviews'
+        }
+      },
+      {
+        $match: {
+          'reviews.0': { $exists: true }
+        }
+      },
+      {
+        $project: {
+          _id: 1,
+          internal_code: 1,
+          source: 1,
+          created_at: 1,
+          review_count: { $size: '$reviews' }
+        }
+      },
+      {
+        $sort: { review_count: -1 }
+      }
+    ]).toArray();
     
-    const professors = result.rows.map(row => ({
-      id: row.id,
+    const professors = result.map(row => ({
+      _id: row._id.toString(),
       internal_code: row.internal_code,
       source: row.source,
       created_at: row.created_at,
-      review_count: parseInt(row.review_count)
+      review_count: row.review_count
     }));
 
     res.json({ professors });
@@ -154,12 +191,12 @@ app.listen(PORT, () => {
 
 process.on('SIGTERM', async () => {
   console.log('SIGTERM received, shutting down gracefully');
-  await pool.end();
+  await closeConnection();
   process.exit(0);
 });
 
 process.on('SIGINT', async () => {
   console.log('SIGINT received, shutting down gracefully');
-  await pool.end();
+  await closeConnection();
   process.exit(0);
 });

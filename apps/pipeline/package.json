@@ -14,12 +14,11 @@
     "@google/generative-ai": "^0.7.1",
     "cheerio": "^1.0.0-rc.12",
     "node-fetch": "^3.3.2",
-    "pg": "^8.11.3",
+    "mongodb": "^6.3.0",
     "@profaganda/shared": "workspace:*",
     "@profaganda/database": "workspace:*"
   },
   "devDependencies": {
-    "@types/pg": "^8.10.9",
     "tsx": "^4.7.0",
     "typescript": "^5.8.2"
   }
