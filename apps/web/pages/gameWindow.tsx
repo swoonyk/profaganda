@@ -17,14 +17,10 @@ type GamePhase = "home" | "lobby" | "round" | "leaderboard" | "end";
 
 export default function GameWindow() {
   const [currentView, setCurrentView] = useState<GamePhase>("home");
-<<<<<<< Updated upstream
-  const [players, setPlayers] = useState<Player[]>([]);
-=======
   const [players, setPlayers] = useState<Player[]>([
     { name: "Alice", points: 0, yourself: true },
     { name: "Bob", points: 0 },
   ]);
->>>>>>> Stashed changes
 
   const updatePoints = (playerName: string, points: number) => {
     setPlayers((prev) =>
@@ -41,10 +37,6 @@ export default function GameWindow() {
   };
 
   return (
-<<<<<<< Updated upstream
-    <div>
-      {currentView === "home" && <Home onStartLobby={startLobby} />}
-=======
     <>
       {currentView === "home" && (
         <Home
@@ -52,7 +44,6 @@ export default function GameWindow() {
           onCreateGame={() => setCurrentView("lobby")}
         />
       )}
->>>>>>> Stashed changes
       {currentView === "lobby" && (
         <Lobby players={players} onStart={() => setCurrentView("round")} />
       )}

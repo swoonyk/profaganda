@@ -17,7 +17,9 @@ export default function Home({ onStartLobby }: HomeProps) {
         <h1>Profaganda!</h1>
         <p>Race your friends to guess the right professor!</p>
         <Button onClick={() => setView("create")}>Create Game</Button>
-        <Button onClick={() => setView("join")}>Join Game</Button>
+        <Button onClick={() => setView("join")} variant="secondary">
+          Join Game
+        </Button>
       </main>
     );
   }
