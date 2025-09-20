@@ -1,5 +1,6 @@
 import React from "react";
-import { Player } from "../GameWindow";
+import { Player } from "../gameWindow";
+import { Button } from "components/ui/Button";
 
 interface LeaderboardProps {
   players: Player[];
@@ -20,7 +21,9 @@ export default function Leaderboard({ players, onNext }: LeaderboardProps) {
             </li>
           ))}
       </ul>
-      <button onClick={onNext}>Next Round</button>
+      <Button onClick={onNext} variant="primary">
+        Next Round
+      </Button>
     </div>
   );
 }

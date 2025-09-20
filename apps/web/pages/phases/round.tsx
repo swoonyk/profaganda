@@ -1,5 +1,6 @@
 import React from "react";
-import { Player } from "../GameWindow";
+import { Player } from "../gameWindow";
+import { Button } from "components/ui/Button";
 
 interface RoundProps {
   players: Player[];
@@ -26,7 +27,9 @@ export default function Round({ players, updatePoints, onNext }: RoundProps) {
           </li>
         ))}
       </ul>
-      <button onClick={handleFinishRound}>End Round</button>
+      <Button variant="primary" onClick={handleFinishRound}>
+        End Round
+      </Button>
     </div>
   );
 }
