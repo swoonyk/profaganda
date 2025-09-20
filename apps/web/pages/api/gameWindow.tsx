@@ -13,7 +13,7 @@ export interface Player {
   points: number;
 }
 
-// Union type for the different game phases
+// Union type for the different game    sduffgawe phases
 type GamePhase = "home" | "lobby" | "round" | "leaderboard" | "end";
 
 export default function GameWindow() {
