@@ -128,6 +128,9 @@ io.on('connection', (socket) => {
     if (!round) return;
     const pId = round.partyId || socket.data.partyId;
     endRound(roundId, pId);
+o.to(`party:${pId}`).emit('server:round_results', results);
+    rounds.delete(roundId);
+    console.log(`Round ${roundId} ended for party ${pId}`);
   });
 
   socket.on('disconnect', () => {
