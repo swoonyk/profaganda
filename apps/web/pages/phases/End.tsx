@@ -1,5 +1,5 @@
 import React from "react";
-import { Player } from "../gameWindow";
+import { Player } from "../GameWindow";
 
 interface EndProps {
   players: Player[];

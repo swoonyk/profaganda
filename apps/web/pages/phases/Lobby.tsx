@@ -1,6 +1,7 @@
 // phases/Lobby.tsx
 // This one should take game code and display it
-import { Player } from "../gameWindow";
+
+import { Player } from "pages/gameWindow";
 
 interface LobbyProps {
   players: Player[];
