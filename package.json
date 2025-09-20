@@ -9,7 +9,8 @@
     "dev": "pnpm --parallel --recursive dev",
     "build": "pnpm --recursive build",
     "pipeline:ingest": "pnpm --filter pipeline start ingest",
-    "pipeline:stats": "pnpm --filter pipeline start stats", 
+    "pipeline:stats": "pnpm --filter pipeline start stats",
+    "pipeline:generate": "pnpm --filter pipeline start generate-ai",
     "api:dev": "pnpm --filter api dev",
     "db:migrate": "pnpm --filter database migrate"
   },
@@ -17,12 +18,13 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "dotenv": "^17.2.2",
     "express": "^5.1.0",
     "socket.io": "^4.8.1"
   },
   "devDependencies": {
+    "@types/node": "^22.13.11",
     "socket.io-client": "^4.8.1",
-    "typescript": "^5.8.2",
-    "@types/node": "^22.13.11"
+    "typescript": "^5.8.2"
   }
 }

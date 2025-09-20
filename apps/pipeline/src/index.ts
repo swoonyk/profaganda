@@ -1,7 +1,12 @@
+import { config } from 'dotenv';
 import { connectToMongoDB, runMigrations, closeConnection } from '@profaganda/database';
 import type { PipelineConfig } from '@profaganda/shared';
 import { fetchMockReviews } from './ingestion/mock-data.js';
 import { SanitizationProcessor } from './sanitization/processor.js';
+import { generateAIReviews } from './generation/ai-reviews.js';
+
+// Load environment variables from .env file
+config({ path: '../../.env' });
 
 function loadConfig(): PipelineConfig {
   const requiredEnvVars = ['GEMINI_API_KEY', 'MONGODB_URI'];
@@ -60,7 +65,7 @@ async function main() {
     }
     
     console.log(`🤖 Starting sanitization with Gemini API (batch size: ${config.batchSize})...`);
-    await processor.processBatch(validReviews, config.batchSize);
+    await processor.processBatch(validReviews, professors, config.batchSize);
     
     const finalStats = await processor.getProcessingStats();
     console.log(`📊 Final stats: ${finalStats.professors} professors, ${finalStats.reviews} reviews`);
@@ -83,10 +88,13 @@ if (command === 'ingest') {
   main();
 } else if (command === 'stats') {
   statsCommand();
+} else if (command === 'generate-ai') {
+  generateAICommand();
 } else if (import.meta.url === `file://${process.argv[1]}`) {
   console.log('Available commands:');
-  console.log('  pnpm pipeline:ingest  - Run ingestion and sanitization');
-  console.log('  pnpm pipeline:stats   - Show database statistics');
+  console.log('  pnpm pipeline:ingest     - Run ingestion and sanitization');
+  console.log('  pnpm pipeline:stats      - Show database statistics');
+  console.log('  pnpm pipeline:generate   - Generate AI reviews for professors');
 }
 
 async function statsCommand() {
@@ -102,6 +110,20 @@ async function statsCommand() {
     
   } catch (error) {
     console.error('Failed to get stats:', error);
+    process.exit(1);
+  } finally {
+    await closeConnection();
+  }
+}
+
+async function generateAICommand() {
+  try {
+    console.log('🤖 Starting AI review generation...');
+    const config = loadConfig();
+    await generateAIReviews(config);
+    
+  } catch (error) {
+    console.error('Failed to generate AI reviews:', error);
     process.exit(1);
   } finally {
     await closeConnection();
