@@ -12,16 +12,26 @@ const baseStyle: React.CSSProperties = {
   padding: "0.5rem 1.25rem",
   border: "none",
   borderRadius: "0.375rem",
-  fontSize: "1rem",
   fontWeight: 500,
   cursor: "pointer",
-  transition: "background 0.2s",
+  transition: "120ms ease-out",
   outline: "none",
   display: "inline-block",
   boxShadow: "0 6px 0 #007658",
   height: "61px",
   width: "300px",
   fontSize: "24px",
+};
+
+const activeStyles: Record<ButtonVariant, React.CSSProperties> = {
+  primary: {
+    boxShadow: "0 2px 0 #007658",
+    transform: "translateY(4px)",
+  },
+  secondary: {
+    boxShadow: "0 2px 0 #A6A6A6",
+    transform: "translateY(4px)",
+  },
 };
 
 const variantStyles: Record<ButtonVariant, React.CSSProperties> = {
@@ -52,11 +62,13 @@ export const Button: React.FC<ButtonProps> = ({
   ...props
 }) => {
   const [hover, setHover] = React.useState(false);
+  const [active, setActive] = React.useState(false);
 
   const style = {
     ...baseStyle,
     ...variantStyles[variant],
     ...(hover ? hoverStyles[variant] : {}),
+    ...(active ? activeStyles[variant] : {}),
   };
 
   return (
@@ -64,7 +76,13 @@ export const Button: React.FC<ButtonProps> = ({
       style={style}
       className={className}
       onMouseEnter={() => setHover(true)}
-      onMouseLeave={() => setHover(false)}
+      onMouseLeave={() => {
+        setHover(false);
+        setActive(false);
+      }}
+      onMouseDown={() => setActive(true)}
+      onMouseUp={() => setActive(false)}
+      onBlur={() => setActive(false)}
       {...props}
     >
       {children}
