@@ -1,8 +1,12 @@
+import { config } from 'dotenv';
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import { connectToMongoDB, createDatabaseQueries, closeConnection } from '@profaganda/database';
 import type { RandomReviewsResponse, ProfessorReviewsResponse } from '@profaganda/shared';
+
+// Load environment variables from .env file
+config({ path: '../../.env' });
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -98,42 +102,18 @@ app.get('/professors', async (req, res) => {
       return res.status(503).json({ error: 'Database not ready' });
     }
 
-    // Get professors with at least one review using MongoDB aggregation
-    const db = dbQueries.db || (await connectToMongoDB(mongodbUri));
-    const result = await db.collection('professors').aggregate([
-      {
-        $lookup: {
-          from: 'reviews',
-          localField: '_id',
-          foreignField: 'professor_id',
-          as: 'reviews'
-        }
-      },
-      {
-        $match: {
-          'reviews.0': { $exists: true }
-        }
-      },
-      {
-        $project: {
-          _id: 1,
-          internal_code: 1,
-          source: 1,
-          created_at: 1,
-          review_count: { $size: '$reviews' }
-        }
-      },
-      {
-        $sort: { review_count: -1 }
-      }
-    ]).toArray();
+    // Get all professors with their information
+    const db = dbQueries.database || (await connectToMongoDB(mongodbUri));
+    const result = await db.collection('professors').find({}).toArray();
     
     const professors = result.map(row => ({
       _id: row._id.toString(),
       internal_code: row.internal_code,
+      name: row.name,
+      school: row.school,
+      department: row.department,
       source: row.source,
-      created_at: row.created_at,
-      review_count: row.review_count
+      created_at: row.created_at
     }));
 
     res.json({ professors });

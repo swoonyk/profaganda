@@ -10,10 +10,23 @@ export class DatabaseQueries {
     this.reviewsCollection = db.collection<Review>('reviews');
   }
 
+  get database(): Db {
+    return this.db;
+  }
+
   // Professor operations
-  async createProfessor(internalCode: string, source: 'rmp' | 'cureviews'): Promise<Professor> {
+  async createProfessor(
+    internalCode: string, 
+    name: string, 
+    school: string, 
+    source: 'rmp' | 'cureviews',
+    department?: string
+  ): Promise<Professor> {
     const professor: Omit<Professor, '_id'> = {
       internal_code: internalCode,
+      name,
+      school,
+      department,
       source,
       created_at: new Date(),
     };
@@ -55,8 +68,9 @@ export class DatabaseQueries {
   async createReview(
     professorId: string,
     sanitizedText: string,
-    source: 'rmp' | 'cureviews',
-    rating?: number
+    source: 'rmp' | 'cureviews' | 'ai_generated',
+    rating?: number,
+    isAiGenerated?: boolean
   ): Promise<Review> {
     const review: Omit<Review, '_id'> = {
       professor_id: professorId,
@@ -64,6 +78,7 @@ export class DatabaseQueries {
       source,
       rating,
       sanitized_at: new Date(),
+      is_ai_generated: isAiGenerated || source === 'ai_generated',
     };
 
     const result = await this.reviewsCollection.insertOne(review as Review);
