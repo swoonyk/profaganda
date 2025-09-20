@@ -27,7 +27,7 @@ export default function Home({ onStartLobby }: HomeProps) {
   // render the create form
   if (view === "create") {
     return (
-      <div>
+      <div className="start">
         <h2>Create Game</h2>
         <input
           type="text"
@@ -35,10 +35,20 @@ export default function Home({ onStartLobby }: HomeProps) {
           value={name}
           onChange={(e) => setName(e.target.value)}
         />
-        <Button disabled={!name} onClick={() => onStartLobby(name, true)}>
-          Start Lobby
-        </Button>
-        <Button onClick={() => setView("buttons")}>Back</Button>
+
+        <div className="buttons">
+          <Button
+            onClick={() => setView("buttons")}
+            variant="secondary"
+            className="buttons"
+          >
+            Back
+          </Button>
+
+          <Button disabled={!name} onClick={() => onStartLobby(name, true)}>
+            Start Lobby
+          </Button>
+        </div>
       </div>
     );
   }
@@ -46,7 +56,7 @@ export default function Home({ onStartLobby }: HomeProps) {
   // render the join form
   if (view === "join") {
     return (
-      <div>
+      <div className="start">
         <h2>Join Game</h2>
         <input
           type="text"
@@ -60,13 +70,23 @@ export default function Home({ onStartLobby }: HomeProps) {
           value={code}
           onChange={(e) => setCode(e.target.value)}
         />
-        <Button
-          disabled={!name || !code}
-          onClick={() => onStartLobby(name, false, code)}
-        >
-          Join Lobby
-        </Button>
-        <Button onClick={() => setView("buttons")}>Back</Button>
+
+        <div className="buttons">
+          <Button
+            onClick={() => setView("buttons")}
+            variant="secondary"
+            className="back"
+          >
+            Back
+          </Button>
+
+          <Button
+            disabled={!name || !code}
+            onClick={() => onStartLobby(name, false, code)}
+          >
+            Join Lobby
+          </Button>
+        </div>
       </div>
     );
   }

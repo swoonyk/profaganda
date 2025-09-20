@@ -47,10 +47,10 @@ const variantStyles: Record<ButtonVariant, React.CSSProperties> = {
 };
 const hoverStyles: Record<ButtonVariant, React.CSSProperties> = {
   primary: {
-    // backgroundColor: "#1d4ed8",
+    backgroundColor: "#09af83ff",
   },
   secondary: {
-    // backgroundColor: "#e5e7eb",
+    backgroundColor: "#cfd1d6ff",
   },
 };
 
