@@ -1,5 +1,3 @@
-// This is the PARENT component for the phases. The purpose of this component is to store the game's state
-// (leaderboard data like player's points)
 import { useState } from "react";
 import Home from "./phases/Home";
 import Lobby from "./phases/Lobby";
@@ -7,21 +5,18 @@ import Round from "./phases/Round";
 import Leaderboard from "./phases/Leaderboard";
 import End from "./phases/End";
 
-// Define a Player type
+// Player type
 export interface Player {
   name: string;
   points: number;
 }
 
-// Union type for the different game    sduffgawe phases
+// Phases
 type GamePhase = "home" | "lobby" | "round" | "leaderboard" | "end";
 
 export default function GameWindow() {
   const [currentView, setCurrentView] = useState<GamePhase>("home");
-  const [players, setPlayers] = useState<Player[]>([
-    { name: "Alice", points: 0 },
-    { name: "Bob", points: 0 },
-  ]);
+  const [players, setPlayers] = useState<Player[]>([]);
 
   const updatePoints = (playerName: string, points: number) => {
     setPlayers((prev) =>
@@ -29,16 +24,19 @@ export default function GameWindow() {
     );
   };
 
+  // This handles both Create and Join from Home
+  const startLobby = (name: string, isHost: boolean, code?: string) => {
+    // For now, just add the player. You can extend later for multiplayer/code validation
+    setPlayers([{ name, points: 0 }]);
+    setCurrentView("lobby");
+    console.log("Start lobby", { name, isHost, code });
+  };
+
   return (
     <div>
-      {currentView === "home" && (
-        <Home
-          onJoinGame={() => setCurrentView("lobby")}
-          onCreateGame={() => setCurrentView("lobby")}
-        />
-      )}
+      {currentView === "home" && <Home onStartLobby={startLobby} />}
       {currentView === "lobby" && (
-        <Lobby onStart={() => setCurrentView("round")} />
+        <Lobby players={players} onStart={() => setCurrentView("round")} />
       )}
       {currentView === "round" && (
         <Round
