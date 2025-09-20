@@ -1,27 +1,13 @@
-import { Button } from "components/ui/Button";
-import React from "react";
+import React, { useState } from "react";
+import GameWindow from "./api/GameWindow";
+import Home from "./api/phases/Home";
 
-export default function Home() {
+function App() {
   return (
-    <main>
-      <h1>Profaganda!</h1>
-      <p>
-        Guess which Cornell prof matches the review. Race your friends to the
-        right answer!
-      </p>
-
-      <div className="buttons">
-        <Button variant="primary" onClick={() => alert("This will join game!")}>
-          Join game
-        </Button>
-
-        <Button
-          variant="secondary"
-          onClick={() => alert("THis will create game!")}
-        >
-          Create game
-        </Button>
-      </div>
-    </main>
+    <div>
+      <GameWindow />
+    </div>
   );
 }
+
+export default App;
