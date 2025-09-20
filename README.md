@@ -38,6 +38,7 @@ If you prefer to set up manually:
 - **Node.js 18+** 
 - **pnpm** (install with `npm install -g pnpm`)
 - **PostgreSQL** database running locally or remotely
+- **Gemini API Key** from [Google AI Studio](https://aistudio.google.com/apikey)
 
 ### Steps
 
@@ -48,35 +49,31 @@ If you prefer to set up manually:
 
 2. **Set up environment variables**:
    ```bash
-   # Copy environment files for each app
-   cp apps/web/.env.example apps/web/.env.local
-   cp apps/api/.env.example apps/api/.env
-   cp apps/pipeline/.env.example apps/pipeline/.env
+   # Copy the example environment file
+   cp env.example .env
    ```
 
-3. **Configure your environment files**:
-   - `apps/api/.env` - Add your `DATABASE_URL`
-   - `apps/pipeline/.env` - Add `DATABASE_URL`, `GEMINI_API_KEY`, and data source API keys
-   - `apps/web/.env.local` - Configure `NEXT_PUBLIC_API_URL` (defaults to http://localhost:4000)
+3. **Configure your `.env` file**:
+   - Set `DATABASE_URL` to your PostgreSQL connection string
+   - Set `GEMINI_API_KEY` to your Gemini API key
+   - Adjust other settings as needed
 
-4. **Set up your database**:
+4. **Set up your database and run the pipeline**:
    ```bash
    # Create database (adjust connection details as needed)
-   createdb review_sanitization
+   createdb profaganda_dev
    
-   # Run migrations (coming soon)
-   # pnpm --filter database migrate
+   # Run database setup (migrations + initial data ingestion)
+   pnpm db:setup
    ```
 
 5. **Start development servers**:
    ```bash
-   # Start all services at once
-   pnpm dev
-
-   # Or start individual services
+   # Start API server
+   pnpm api:dev      # API Server → http://localhost:3001
+   
+   # In another terminal, start web app
    pnpm web:dev      # Frontend → http://localhost:3000
-   pnpm api:dev      # API Server → http://localhost:4000  
-   pnpm pipeline:dev # Pipeline service
    ```
 
 ## 🌐 Local Development URLs
@@ -127,8 +124,19 @@ pnpm install            # Install dependencies manually
 ```bash
 pnpm dev                # Start all apps simultaneously
 pnpm web:dev           # Start web app only (port 3000)
-pnpm api:dev           # Start API server only (port 4000)
-pnpm pipeline:dev      # Start pipeline service only
+pnpm api:dev           # Start API server only (port 3001)
+```
+
+### Pipeline Operations
+```bash
+pnpm pipeline:ingest   # Run review ingestion and sanitization
+pnpm pipeline:stats    # Show database statistics
+```
+
+### Database Operations
+```bash
+pnpm db:migrate        # Run database migrations
+pnpm db:setup          # Set up database and ingest initial data
 ```
 
 ### Building & Testing
@@ -143,21 +151,15 @@ pnpm lint              # Lint all packages
 pnpm clean             # Clean all build artifacts
 ```
 
-### Database Operations
-```bash
-# Coming soon - database migrations
-pnpm --filter database migrate
-```
-
 ## 🔧 Environment Configuration
 
-Each application has its own `.env.example` file. Here's what you need to configure:
+Copy `env.example` to `.env` and configure the following:
 
 ### Required Variables
 
 **Database (for API & Pipeline)**:
 ```bash
-DATABASE_URL=postgresql://username:password@localhost:5432/review_sanitization
+DATABASE_URL=postgresql://username:password@localhost:5432/profaganda_dev
 ```
 
 **AI Service (for Pipeline)**:
@@ -167,22 +169,32 @@ GEMINI_API_KEY=your_gemini_api_key_here
 
 ### Optional Variables
 
-**Data Sources (for Pipeline)**:
+**Pipeline Configuration**:
 ```bash
-RMP_API_KEY=your_ratemyprof_api_key        # Rate My Professor
-CUREVIEWS_API_KEY=your_cureviews_api_key   # CUReviews
+BATCH_SIZE=5                    # Number of reviews to process at once
+SCHOOL=Cornell                  # School name for filtering
+MIN_REVIEW_LENGTH=30           # Minimum review length
+MAX_REVIEW_LENGTH=3000         # Maximum review length
 ```
 
-**Frontend Configuration**:
+**API Configuration**:
 ```bash
-NEXT_PUBLIC_API_URL=http://localhost:4000  # API server URL
+PORT=3001                      # API server port
 ```
 
 ### Getting API Keys
 
-- **Gemini AI**: Get your API key from [Google AI Studio](https://makersuite.google.com/app/apikey)
-- **Rate My Professor**: Contact RMP for API access or use web scraping
-- **CUReviews**: Check if they offer an API or use web scraping
+- **Gemini AI**: Get your API key from [Google AI Studio](https://aistudio.google.com/apikey)
+
+### API Endpoints
+
+Once the API server is running, you can access:
+
+- `GET /health` - Health check
+- `GET /reviews/random?count=N` - Get N random sanitized reviews  
+- `GET /reviews/by-professor/:id` - Get reviews for a specific professor
+- `GET /professors` - Get all professors with review counts
+- `GET /stats` - Get database statistics
 
 ## Tech Stack
 
