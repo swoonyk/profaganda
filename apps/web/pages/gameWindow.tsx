@@ -38,12 +38,7 @@ export default function GameWindow() {
 
   return (
     <>
-      {currentView === "home" && (
-        <Home
-          onJoinGame={() => setCurrentView("lobby")}
-          onCreateGame={() => setCurrentView("lobby")}
-        />
-      )}
+      {currentView === "home" && <Home onStartLobby={startLobby} />}
       {currentView === "lobby" && (
         <Lobby players={players} onStart={() => setCurrentView("round")} />
       )}
