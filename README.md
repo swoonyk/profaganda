@@ -37,7 +37,7 @@ If you prefer to set up manually:
 ### Prerequisites
 - **Node.js 18+** 
 - **pnpm** (install with `npm install -g pnpm`)
-- **PostgreSQL** database running locally or remotely
+- **MongoDB Atlas** cluster (free tier available)
 - **Gemini API Key** from [Google AI Studio](https://aistudio.google.com/apikey)
 
 ### Steps
@@ -54,15 +54,12 @@ If you prefer to set up manually:
    ```
 
 3. **Configure your `.env` file**:
-   - Set `DATABASE_URL` to your PostgreSQL connection string
+   - Set `MONGODB_URI` to your MongoDB Atlas connection string
    - Set `GEMINI_API_KEY` to your Gemini API key
    - Adjust other settings as needed
 
 4. **Set up your database and run the pipeline**:
    ```bash
-   # Create database (adjust connection details as needed)
-   createdb profaganda_dev
-   
    # Run database setup (migrations + initial data ingestion)
    pnpm db:setup
    ```
@@ -159,7 +156,7 @@ Copy `env.example` to `.env` and configure the following:
 
 **Database (for API & Pipeline)**:
 ```bash
-DATABASE_URL=postgresql://username:password@localhost:5432/profaganda_dev
+MONGODB_URI=mongodb+srv://username:password@cluster0.xxxxx.mongodb.net/profaganda?retryWrites=true&w=majority
 ```
 
 **AI Service (for Pipeline)**:

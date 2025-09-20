@@ -18,11 +18,10 @@
     "migrate": "tsx src/migrations/run.ts"
   },
   "dependencies": {
-    "pg": "^8.11.3",
+    "mongodb": "^6.3.0",
     "@profaganda/shared": "workspace:*"
   },
   "devDependencies": {
-    "@types/pg": "^8.10.9",
     "tsx": "^4.7.0",
     "typescript": "^5.8.2"
   }

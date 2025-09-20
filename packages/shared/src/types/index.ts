@@ -1,13 +1,13 @@
-// Database entities
+// Database entities (MongoDB documents)
 export interface Professor {
-  id: string;
+  _id?: string;
   internal_code: string;
   source: 'rmp' | 'cureviews';
   created_at: Date;
 }
 
 export interface Review {
-  id: string;
+  _id?: string;
   professor_id: string;
   sanitized_text: string;
   source: 'rmp' | 'cureviews';
@@ -53,7 +53,7 @@ export interface SanitizationResult {
 // Pipeline configuration
 export interface PipelineConfig {
   geminiApiKey: string;
-  databaseUrl: string;
+  mongodbUri: string;
   batchSize: number;
   school: string;
   minReviewLength: number;

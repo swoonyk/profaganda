@@ -1,6 +1,6 @@
 import { createGeminiClient, type GeminiClient, type RawReview, type SanitizationResult } from '@profaganda/shared';
 import { createDatabaseQueries, type DatabaseQueries } from '@profaganda/database';
-import type { Pool } from 'pg';
+import type { Db } from 'mongodb';
 
 export class SanitizationProcessor {
   private geminiClient: GeminiClient;
@@ -8,10 +8,10 @@ export class SanitizationProcessor {
 
   constructor(
     geminiApiKey: string,
-    dbPool: Pool
+    database: Db
   ) {
     this.geminiClient = createGeminiClient(geminiApiKey);
-    this.dbQueries = createDatabaseQueries(dbPool);
+    this.dbQueries = createDatabaseQueries(database);
   }
 
   async processBatch(reviews: RawReview[], batchSize: number = 20): Promise<void> {
