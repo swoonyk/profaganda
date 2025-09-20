@@ -1,4 +1,5 @@
 @import url("https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Cherry+Cream+Soda&family=EB+Garamond:ital,wght@0,400..800;1,400..800&display=swap");
 
 * {
   box-sizing: border-box;
@@ -37,6 +38,9 @@ main {
 
 main h1 {
   font-size: 96px;
+  font-family: "Cherry Cream Soda", system-ui;
+  font-weight: 400;
+  font-style: normal;
 }
 
 main p {
@@ -46,7 +50,7 @@ main p {
 
 .buttons {
   display: flex;
-  gap: 32px;
+  gap: 24px;
 }
 
 .leaderboard {
@@ -82,7 +86,7 @@ main p {
 .start {
   display: flex;
   flex-direction: column;
-  gap: 32px;
+  gap: 24px;
   width: 632px;
   padding: 64px;
   background: rgba(255 255 255 / 10%);
@@ -116,7 +120,7 @@ input:focus {
 
 .start .buttons {
   display: flex;
-  gap: 32px;
+  gap: 24px;
 }
 
 .start .buttons button.back {

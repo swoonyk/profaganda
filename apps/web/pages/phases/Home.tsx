@@ -40,7 +40,7 @@ export default function Home({ onStartLobby }: HomeProps) {
           <Button
             onClick={() => setView("buttons")}
             variant="secondary"
-            className="buttons"
+            className="back"
           >
             Back
           </Button>

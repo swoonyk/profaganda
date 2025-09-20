@@ -1,6 +1,5 @@
 import React, { useState } from "react";
-import Home from "./phases/Home";
-import GameWindow from "./gameWindow";
+import GameWindow from "./GameWindow";
 
 function App() {
   return (
