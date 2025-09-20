@@ -1,10 +1,10 @@
-import { createPool, runMigrations, closePool } from '@profaganda/database';
+import { connectToMongoDB, runMigrations, closeConnection } from '@profaganda/database';
 import type { PipelineConfig } from '@profaganda/shared';
 import { fetchMockReviews } from './ingestion/mock-data.js';
 import { SanitizationProcessor } from './sanitization/processor.js';
 
 function loadConfig(): PipelineConfig {
-  const requiredEnvVars = ['GEMINI_API_KEY', 'DATABASE_URL'];
+  const requiredEnvVars = ['GEMINI_API_KEY', 'MONGODB_URI'];
   
   for (const envVar of requiredEnvVars) {
     if (!process.env[envVar]) {
@@ -14,7 +14,7 @@ function loadConfig(): PipelineConfig {
 
   return {
     geminiApiKey: process.env.GEMINI_API_KEY!,
-    databaseUrl: process.env.DATABASE_URL!,
+    mongodbUri: process.env.MONGODB_URI!,
     batchSize: parseInt(process.env.BATCH_SIZE || '5'),
     school: process.env.SCHOOL || 'Cornell',
     minReviewLength: parseInt(process.env.MIN_REVIEW_LENGTH || '30'),
@@ -31,12 +31,12 @@ async function main() {
     console.log('🚀 Starting review ingestion and sanitization pipeline...');
     
     const config = loadConfig();
-    const pool = createPool(config.databaseUrl);
+    const db = await connectToMongoDB(config.mongodbUri);
     
     console.log('📊 Setting up database...');
-    await runMigrations(pool);
+    await runMigrations(db);
     
-    const processor = new SanitizationProcessor(config.geminiApiKey, pool);
+    const processor = new SanitizationProcessor(config.geminiApiKey, db);
     
     const initialStats = await processor.getProcessingStats();
     console.log(`📈 Initial stats: ${initialStats.professors} professors, ${initialStats.reviews} reviews`);
@@ -73,7 +73,7 @@ async function main() {
     console.error('❌ Pipeline failed:', error);
     process.exit(1);
   } finally {
-    await closePool();
+    await closeConnection();
   }
 }
 
@@ -92,8 +92,8 @@ if (command === 'ingest') {
 async function statsCommand() {
   try {
     const config = loadConfig();
-    const pool = createPool(config.databaseUrl);
-    const processor = new SanitizationProcessor(config.geminiApiKey, pool);
+    const db = await connectToMongoDB(config.mongodbUri);
+    const processor = new SanitizationProcessor(config.geminiApiKey, db);
     
     const stats = await processor.getProcessingStats();
     console.log('📊 Database Statistics:');
@@ -104,6 +104,6 @@ async function statsCommand() {
     console.error('Failed to get stats:', error);
     process.exit(1);
   } finally {
-    await closePool();
+    await closeConnection();
   }
 }
