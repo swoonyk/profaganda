@@ -48,3 +48,33 @@ main p {
   display: flex;
   gap: 32px;
 }
+
+.leaderboard {
+  width: 1000px;
+}
+
+.leaderboard .header,
+.round .header {
+  display: flex;
+  justify-content: space-between;
+}
+
+.leaderboard ul li {
+  list-style-type: none;
+  padding: 8px;
+  border-radius: 8px;
+  background: rgba(0 0 0 / 20%);
+}
+
+.leaderboard-item.yourself {
+  background: #fff;
+  color: #000;
+}
+
+.round {
+  width: 1000px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
