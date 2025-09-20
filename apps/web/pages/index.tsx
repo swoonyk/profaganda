@@ -10,16 +10,18 @@ export default function Home() {
         right answer!
       </p>
 
-      <Button variant="primary" onClick={() => alert("This will join game!")}>
-        Join game
-      </Button>
+      <div className="buttons">
+        <Button variant="primary" onClick={() => alert("This will join game!")}>
+          Join game
+        </Button>
 
-      <Button
-        variant="secondary"
-        onClick={() => alert("THis will create game!")}
-      >
-        Create game
-      </Button>
+        <Button
+          variant="secondary"
+          onClick={() => alert("THis will create game!")}
+        >
+          Create game
+        </Button>
+      </div>
     </main>
   );
 }
