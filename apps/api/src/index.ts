@@ -106,7 +106,7 @@ app.get('/professors', async (req, res) => {
     const db = dbQueries.database || (await connectToMongoDB(mongodbUri));
     const result = await db.collection('professors').find({}).toArray();
     
-    const professors = result.map(row => ({
+    const professors = result.map((row: any) => ({
       _id: row._id.toString(),
       internal_code: row.internal_code,
       name: row.name,
