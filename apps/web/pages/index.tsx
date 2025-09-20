@@ -7,9 +7,9 @@ export default function Home() {
       <h1>Welcome to Profaganda!</h1>
       <p>This is your homepage.</p>
     
-    <Button onClick={() => alert('Button clicked!')}>
-        Click Me
-      </Button>
+        <Button onClick={() => alert('Button clicked!')}>
+            Click Me
+        </Button>
     </main>
   );
 }
