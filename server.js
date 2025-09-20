@@ -1,9 +1,12 @@
-
+// server.js
 const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
 
 const PORT = process.env.PORT || 3000;
+// Auto-end timer per round (ms). Set to 0 to disable.
+const ROUND_DURATION_MS = Number(process.env.ROUND_DURATION_MS || 20000);
+
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
@@ -11,18 +14,21 @@ const io = new Server(server, {
 });
 
 // In-memory state
-const rounds = new Map(); // roundId -> { mode, correctAnswer, counts, answered, partyId, optionsSet, timeout }
-const leaderboards = new Map(); // partyId -> Map<playerId, score>
+// roundId -> { mode, correctAnswer, counts, answered:Set, partyId, optionsSet:Set, timeout:NodeJS.Timeout }
+const rounds = new Map();
+// partyId -> Map<playerId, score>
+const leaderboards = new Map();
 
 function lbFor(partyId) {
   if (!leaderboards.has(partyId)) leaderboards.set(partyId, new Map());
   return leaderboards.get(partyId);
 }
 
-function endRound(roundId, pId) {
+function endRound(roundId, partyId) {
   const round = rounds.get(roundId);
   if (!round) return;
-  const lb = lbFor(pId);
+
+  const lb = lbFor(partyId);
   const results = {
     roundId,
     mode: round.mode,
@@ -32,10 +38,12 @@ function endRound(roundId, pId) {
       .map(([playerId, score]) => ({ playerId, score }))
       .sort((a, b) => b.score - a.score)
   };
-  io.to(`party:${pId}`).emit('server:round_results', results);
+
+  io.to(`party:${partyId}`).emit('server:round_results', results);
+
   if (round.timeout) clearTimeout(round.timeout);
   rounds.delete(roundId);
-  console.log(`Round ${roundId} ended for party ${pId}`);
+  console.log(`Round ${roundId} ended for party ${partyId}`);
 }
 
 app.get('/', (_req, res) => {
@@ -45,6 +53,7 @@ app.get('/', (_req, res) => {
 io.on('connection', (socket) => {
   console.log('Socket connected:', socket.id);
 
+  // Player joins a party
   socket.on('connect_player', ({ playerId, partyId, isHost }) => {
     if (!playerId || !partyId) return;
     socket.data.playerId = playerId;
@@ -55,48 +64,70 @@ io.on('connection', (socket) => {
     console.log(`Player ${playerId} joined party ${partyId}`);
   });
 
+  // Host starts a round
+  // Payload: { roundId, mode: 'A'|'B', correctAnswer: string|boolean, options?: string[], partyId? }
   socket.on('host:start_round', ({ roundId, mode, correctAnswer, options = [], partyId }) => {
-    if (!socket.data.isHost) return;
-    const pId = partyId || socket.data.partyId;
-    if (!roundId || !mode || (mode !== 'A' && mode !== 'B') || !pId) return;
+    try {
+      if (!socket.data.isHost) return;
+      const pId = partyId || socket.data.partyId;
+      if (!roundId || !mode || (mode !== 'A' && mode !== 'B') || !pId) return;
 
-    const optionsSet = new Set(options);
-    const DURATION_MS = 20000; // auto-end after 20s
-    const timeout = setTimeout(() => endRound(roundId, pId), DURATION_MS);
+      // Prepare round state
+      const optionsSet = new Set(options);
+      let timeout = null;
+      if (ROUND_DURATION_MS > 0) {
+        timeout = setTimeout(() => endRound(roundId, pId), ROUND_DURATION_MS);
+      }
 
-    rounds.set(roundId, {
-      mode,
-      correctAnswer,
-      counts: {},
-      answered: new Set(),
-      partyId: pId,
-      optionsSet,
-      timeout
-    });
+      rounds.set(roundId, {
+        mode,
+        correctAnswer,       // Mode A: professorId (string); Mode B: boolean (true=AI)
+        counts: {},          // key -> count (professorId or 'real'/'ai')
+        answered: new Set(), // playerIds who already answered
+        partyId: pId,
+        optionsSet,
+        timeout
+      });
 
-    io.to(`party:${pId}`).emit('server:round_started', {
-      roundId,
-      mode,
-      options
-    });
-    console.log(`Round ${roundId} started in party ${pId} (mode ${mode})`);
+      // Broadcast round start (clients render from this)
+      io.to(`party:${pId}`).emit('server:round_started', {
+        roundId,
+        mode,
+        options
+      });
+
+      console.log(`Round ${roundId} started in party ${pId} (mode ${mode})`);
+    } catch (err) {
+      console.error('host:start_round error', err);
+    }
   });
 
+  // Player submits an answer
+  // Mode A: { roundId, choice: 'professorId' }
+  // Mode B: { roundId, choice: { isAI: boolean } } OR choice: 'ai'|'real' OR true/false
   socket.on('player:submit_answer', ({ roundId, choice }) => {
     const playerId = socket.data.playerId;
-    const partyId = socket.data.partyId;
+    const partyId  = socket.data.partyId;
     if (!playerId || !partyId) return;
 
     const round = rounds.get(roundId);
-    if (!round || round.answered.has(playerId)) return;
+    if (!round) return;
 
+    if (round.answered.has(playerId)) {
+      // One answer per player per round
+      return socket.emit('server:answer_ack', { roundId, accepted: false });
+    }
+
+    // Normalize choice
     let normalizedChoice;
     if (round.mode === 'A') {
+      // Expecting a professorId string; validate against provided options
       normalizedChoice = String(choice);
       if (!round.optionsSet.has(normalizedChoice)) {
         return socket.emit('server:answer_ack', { roundId, accepted: false });
       }
     } else {
+      // Mode B: accept {isAI}, boolean, or 'ai'/'real'
       if (typeof choice === 'object' && choice && 'isAI' in choice) {
         normalizedChoice = choice.isAI ? 'ai' : 'real';
       } else if (choice === true || choice === false) {
@@ -108,29 +139,35 @@ io.on('connection', (socket) => {
       }
     }
 
+    // Evaluate correctness
     const correct = (round.mode === 'A')
       ? normalizedChoice === String(round.correctAnswer)
       : normalizedChoice === (round.correctAnswer ? 'ai' : 'real');
 
     const points = correct ? 100 : 0;
+
+    // In-memory updates
     round.answered.add(playerId);
     round.counts[normalizedChoice] = (round.counts[normalizedChoice] || 0) + 1;
+
     const lb = lbFor(partyId);
     lb.set(playerId, (lb.get(playerId) || 0) + points);
 
-    console.log(`[MVP] Vote recorded: player=${playerId}, round=${roundId}, choice=${normalizedChoice}, correct=${correct}, points=${points}, totalScore=${lb.get(playerId)}`);
+    console.log(
+      `[MVP] Vote recorded: player=${playerId}, round=${roundId}, choice=${normalizedChoice}, ` +
+      `correct=${correct}, points=${points}, totalScore=${lb.get(playerId)}`
+    );
+
     socket.emit('server:answer_ack', { roundId, accepted: true });
   });
 
+  // Host ends the round manually (optional if auto-timer is on)
   socket.on('host:end_round', ({ roundId }) => {
     if (!socket.data.isHost) return;
     const round = rounds.get(roundId);
     if (!round) return;
     const pId = round.partyId || socket.data.partyId;
     endRound(roundId, pId);
-io.to(`party:${pId}`).emit('server:round_results', results);
-    rounds.delete(roundId);
-    console.log(`Round ${roundId} ended for party ${pId}`);
   });
 
   socket.on('disconnect', () => {

@@ -1,55 +1,62 @@
-// client.js
-// Simulates 1 host + 2 players connecting to your local server,
-// runs a Mode A round and a Mode B round, then exits.
-
+// client.js (event-driven, deterministic two-round demo)
 const { io } = require('socket.io-client');
 
-// ====== Config ======
 const SERVER = process.env.SOCKET_SERVER_URL || 'http://localhost:3000';
 const PARTY_ID = 'party-1';
 const HOST_ID = 'host-1';
 const PLAYER_1 = 'p1';
 const PLAYER_2 = 'p2';
 
-// Helpers
-function sleep(ms) { return new Promise((r) => setTimeout(r, ms)); }
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 function log(title, obj) {
   console.log(title, typeof obj === 'string' ? obj : JSON.stringify(obj, null, 2));
 }
 
 async function run() {
-  // Create host + players
   const host = io(SERVER, { transports: ['websocket'] });
-  const p1 = io(SERVER, { transports: ['websocket'] });
-  const p2 = io(SERVER, { transports: ['websocket'] });
+  const p1   = io(SERVER, { transports: ['websocket'] });
+  const p2   = io(SERVER, { transports: ['websocket'] });
 
-  // Register listeners
-  const registerCommon = (name, socket) => {
-    socket.on('connect', () => console.log(`[${name}] connected as ${socket.id}`));
-    socket.on('connected', (msg) => log(`[${name}] connected ack`, msg));
-    socket.on('server:round_started', (msg) => log(`[${name}] round started`, msg));
-    socket.on('server:round_results', (msg) => {
-      console.log(`\n[${name}] ROUND RESULTS`);
-      console.table(msg.counts);
-      console.table(msg.leaderboard);
-    });
-    socket.on('server:answer_ack', (msg) => log(`[${name}] answer ack`, msg));
-    socket.on('disconnect', () => console.log(`[${name}] disconnected`));
+  // Connection acks
+  host.on('connect', () => console.log(`[HOST] connected as ${host.id}`));
+  p1.on('connect',   () => console.log(`[P1] connected as ${p1.id}`));
+  p2.on('connect',   () => console.log(`[P2] connected as ${p2.id}`));
+
+  // Standard listeners
+  const onRoundStarted = (name) => (msg) => log(`[${name}] round started`, msg);
+  host.on('server:round_started', onRoundStarted('HOST'));
+  p1.on('server:round_started',   onRoundStarted('P1'));
+  p2.on('server:round_started',   onRoundStarted('P2'));
+
+  const onAnswerAck = (name) => (msg) => log(`[${name}] answer ack`, msg);
+  p1.on('server:answer_ack', onAnswerAck('P1'));
+  p2.on('server:answer_ack', onAnswerAck('P2'));
+
+  const showResults = (name) => (msg) => {
+    console.log(`\n[${name}] ROUND RESULTS`);
+    console.table(msg.counts);
+    console.table(msg.leaderboard);
   };
+  host.on('server:round_results', showResults('HOST'));
+  p1.on('server:round_results',   showResults('P1'));
+  p2.on('server:round_results',   showResults('P2'));
 
-  registerCommon('HOST', host);
-  registerCommon('P1', p1);
-  registerCommon('P2', p2);
+  const allConnected = new Promise((resolve) => {
+    let count = 0;
+    const mark = () => (++count === 3 && resolve());
+    host.on('connected', mark);
+    p1.on('connected', mark);
+    p2.on('connected', mark);
+  });
 
-  // Connect to party
+  // Connect players
   host.emit('connect_player', { playerId: HOST_ID, partyId: PARTY_ID, isHost: true });
-  p1.emit('connect_player', { playerId: PLAYER_1, partyId: PARTY_ID });
-  p2.emit('connect_player', { playerId: PLAYER_2, partyId: PARTY_ID });
+  p1.emit('connect_player',   { playerId: PLAYER_1, partyId: PARTY_ID });
+  p2.emit('connect_player',   { playerId: PLAYER_2, partyId: PARTY_ID });
 
-  await sleep(200);
+  await allConnected;
 
-  // ====== ROUND 1 (Mode A): guess the professor ======
-  // Options are simple IDs; correct is 'profA'
+  // ===== Round 1: Mode A =====
   console.log('\n=== START ROUND 1 (Mode A) ===');
   host.emit('host:start_round', {
     roundId: 'round-1',
@@ -59,37 +66,52 @@ async function run() {
     partyId: PARTY_ID
   });
 
-  await sleep(250);
-  // P1 correct, P2 wrong
-  p1.emit('player:submit_answer', { roundId: 'round-1', choice: 'profA' });
+  await sleep(200);
+  p1.emit('player:submit_answer', { roundId: 'round-1', choice: 'profA' }); // correct
   p2.emit('player:submit_answer', { roundId: 'round-1', choice: 'profB' });
 
-  // End early (server also has auto-timer)
-  await sleep(600);
+  const round1Done = new Promise((resolve) => {
+    const handler = (msg) => {
+      if (msg.roundId === 'round-1') {
+        host.off('server:round_results', handler);
+        resolve();
+      }
+    };
+    host.on('server:round_results', handler);
+  });
+
+  await sleep(250);
   host.emit('host:end_round', { roundId: 'round-1' });
+  await round1Done;
 
-  await sleep(500);
-
-  // ====== ROUND 2 (Mode B): real vs ai ======
-  // correctAnswer = true means "AI" review; false would mean "real"
+  // ===== Round 2: Mode B =====
   console.log('\n=== START ROUND 2 (Mode B) ===');
   host.emit('host:start_round', {
     roundId: 'round-2',
     mode: 'B',
-    correctAnswer: true, // means the truth is AI
+    correctAnswer: true, // AI
     partyId: PARTY_ID
   });
 
+  await sleep(200);
+  p1.emit('player:submit_answer', { roundId: 'round-2', choice: { isAI: true } });  // correct
+  p2.emit('player:submit_answer', { roundId: 'round-2', choice: { isAI: false } }); // wrong
+
+  const round2Done = new Promise((resolve) => {
+    const handler = (msg) => {
+      if (msg.roundId === 'round-2') {
+        host.off('server:round_results', handler);
+        resolve();
+      }
+    };
+    host.on('server:round_results', handler);
+  });
+
   await sleep(250);
-  // P1 guesses AI (correct), P2 guesses real (wrong)
-  p1.emit('player:submit_answer', { roundId: 'round-2', choice: { isAI: true } });
-  p2.emit('player:submit_answer', { roundId: 'round-2', choice: { isAI: false } });
-
-  await sleep(600);
   host.emit('host:end_round', { roundId: 'round-2' });
+  await round2Done;
 
-  // Allow final results to print, then exit
-  await sleep(800);
+  await sleep(200);
   host.disconnect(); p1.disconnect(); p2.disconnect();
   process.exit(0);
 }
