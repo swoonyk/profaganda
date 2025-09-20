@@ -12,11 +12,12 @@
   },
   "dependencies": {
     "@google/generative-ai": "^0.7.1",
-    "cheerio": "^1.0.0-rc.12",
-    "node-fetch": "^3.3.2",
-    "mongodb": "^6.3.0",
+    "@profaganda/database": "workspace:*",
     "@profaganda/shared": "workspace:*",
-    "@profaganda/database": "workspace:*"
+    "cheerio": "^1.0.0-rc.12",
+    "dotenv": "^17.2.2",
+    "mongodb": "^6.3.0",
+    "node-fetch": "^3.3.2"
   },
   "devDependencies": {
     "tsx": "^4.7.0",
