@@ -8,16 +8,23 @@
     "build": "tsc",
     "start": "tsx src/index.ts",
     "clean": "rm -rf dist",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "test-real-data": "tsx src/ingestion/test-real-data.ts",
+    "test-rmp": "tsx src/ingestion/test-rmp-only.ts",
+    "test-full-pipeline": "tsx src/ingestion/test-full-pipeline.ts",
+    "ingest-professors": "tsx src/ingestion/professors-only.ts",
+    "ingest-reviews": "tsx src/ingestion/reviews-only.ts"
   },
   "dependencies": {
     "@google/generative-ai": "^0.7.1",
     "@profaganda/database": "workspace:*",
     "@profaganda/shared": "workspace:*",
-    "cheerio": "^1.0.0-rc.12",
+    "axios": "^1.12.2",
+    "cheerio": "^1.1.2",
     "dotenv": "^17.2.2",
     "mongodb": "^6.3.0",
-    "node-fetch": "^3.3.2"
+    "node-fetch": "^3.3.2",
+    "ratemyprofessor-api": "^1.0.1"
   },
   "devDependencies": {
     "tsx": "^4.7.0",

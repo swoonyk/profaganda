@@ -1,7 +1,7 @@
 import { config } from 'dotenv';
 import { connectToMongoDB, runMigrations, closeConnection } from '@profaganda/database';
 import type { PipelineConfig } from '@profaganda/shared';
-import { fetchMockReviews } from './ingestion/mock-data.js';
+import { fetchReviewsWithConfig } from './ingestion/real-data.js';
 import { SanitizationProcessor } from './sanitization/processor.js';
 import { generateAIReviews } from './generation/ai-reviews.js';
 
@@ -21,7 +21,7 @@ function loadConfig(): PipelineConfig {
     geminiApiKey: process.env.GEMINI_API_KEY!,
     mongodbUri: process.env.MONGODB_URI!,
     batchSize: parseInt(process.env.BATCH_SIZE || '5'),
-    school: process.env.SCHOOL || 'Cornell',
+    school: process.env.SCHOOL || 'Cornell University',
     minReviewLength: parseInt(process.env.MIN_REVIEW_LENGTH || '30'),
     maxReviewLength: parseInt(process.env.MAX_REVIEW_LENGTH || '3000'),
     maxRetries: parseInt(process.env.MAX_RETRIES || '2'),
@@ -46,8 +46,9 @@ async function main() {
     const initialStats = await processor.getProcessingStats();
     console.log(`📈 Initial stats: ${initialStats.professors} professors, ${initialStats.reviews} reviews`);
     
-    console.log('📥 Fetching reviews...');
-    const { reviews, professors } = await fetchMockReviews();
+    console.log('📥 Fetching reviews from real sources...');
+    const fetchConfig = process.env.NODE_ENV === 'production' ? 'production' : 'development';
+    const { reviews, professors } = await fetchReviewsWithConfig(fetchConfig);
     console.log(`✅ Fetched ${reviews.length} reviews from ${professors.length} professors`);
     
     const validReviews = reviews.filter(review => 
