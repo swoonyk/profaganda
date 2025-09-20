@@ -1,32 +1,29 @@
 ```bash
 
-# Check current status
+. Separate Ingestion Scripts
+
+pnpm pipeline:ingest-professors - Fetch and store professors only
+pnpm pipeline:ingest-reviews - Fetch and store reviews for existing professors
+pnpm pipeline:ingest - Full pipeline (professors + reviews + sanitization)
+
+3. Comprehensive Testing
+
+pnpm pipeline:test-rmp - Test RateMyProfessor API specifically
+pnpm pipeline:test-real-data - Test both data sources
+pnpm pipeline:test-full - Complete pipeline validation
+pnpm pipeline:stats - View database statistics
+
+# 1. Test system first
+pnpm pipeline:test-full
+
+# 2. Ingest professors (5-10 minutes)
+pnpm pipeline:ingest-professors
+
+# 3. Check what was added
 pnpm pipeline:stats
 
-# Load professors and real reviews (sanitizes with Gemini)
-pnpm pipeline:ingest
+# 4. Ingest reviews (10-20 minutes)  
+pnpm pipeline:ingest-reviews
 
-# Generate AI-generated fake reviews 
-pnpm pipeline:generate
-
-
-### **Test API Endpoints**
-
-```bash
-# Start the API server
-pnpm api:dev
-
-# In a new terminal, test the endpoints:
-
-# Get all professors with names
-curl http://localhost:3001/professors
-
-# Get database statistics  
-curl http://localhost:3001/stats
-
-# Get random reviews (mix of real and AI)
-curl http://localhost:3001/reviews/random?count=5
-
-# Get reviews for a specific professor
-curl http://localhost:3001/reviews/by-professor/[PROFESSOR_ID]
-```
+# 5. Final check
+pnpm pipeline:stats

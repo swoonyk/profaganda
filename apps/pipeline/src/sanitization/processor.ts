@@ -44,7 +44,7 @@ export class SanitizationProcessor {
     }
   }
 
-  private async createProfessors(professors: RawProfessor[]): Promise<void> {
+  async createProfessors(professors: RawProfessor[]): Promise<void> {
     console.log(`Creating ${professors.length} professors...`);
     
     for (const rawProfessor of professors) {

@@ -11,6 +11,11 @@
     "pipeline:ingest": "pnpm --filter pipeline start ingest",
     "pipeline:stats": "pnpm --filter pipeline start stats",
     "pipeline:generate": "pnpm --filter pipeline start generate-ai",
+    "pipeline:test-real-data": "pnpm --filter pipeline test-real-data",
+    "pipeline:test-rmp": "pnpm --filter pipeline test-rmp",
+    "pipeline:test-full": "pnpm --filter pipeline test-full-pipeline",
+    "pipeline:ingest-professors": "pnpm --filter pipeline ingest-professors",
+    "pipeline:ingest-reviews": "pnpm --filter pipeline ingest-reviews",
     "api:dev": "pnpm --filter api dev",
     "db:migrate": "pnpm --filter database migrate"
   },
