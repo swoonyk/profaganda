@@ -5,18 +5,18 @@ import Round from "./phases/Round";
 import Leaderboard from "./phases/Leaderboard";
 import End from "./phases/End";
 
-// Player type
 export interface Player {
   name: string;
   points: number;
 }
 
-// Phases
 type GamePhase = "home" | "lobby" | "round" | "leaderboard" | "end";
 
 export default function GameWindow() {
   const [currentView, setCurrentView] = useState<GamePhase>("home");
   const [players, setPlayers] = useState<Player[]>([]);
+  const [roundNumber, setRoundNumber] = useState(1);
+  const maxRounds = 5;
 
   const updatePoints = (playerName: string, points: number) => {
     setPlayers((prev) =>
@@ -24,12 +24,19 @@ export default function GameWindow() {
     );
   };
 
-  // This handles both Create and Join from Home
   const startLobby = (name: string, isHost: boolean, code?: string) => {
-    // For now, just add the player. You can extend later for multiplayer/code validation
-    setPlayers([{ name, points: 0 }]);
+    setPlayers([{ name, points: 0 }]); // add host/joining player
+    setRoundNumber(1); // reset rounds
     setCurrentView("lobby");
-    console.log("Start lobby", { name, isHost, code });
+  };
+
+  const goToNextRoundOrEnd = () => {
+    if (roundNumber >= maxRounds) {
+      setCurrentView("end");
+    } else {
+      setRoundNumber(roundNumber + 1);
+      setCurrentView("round");
+    }
   };
 
   return (
@@ -46,7 +53,10 @@ export default function GameWindow() {
         />
       )}
       {currentView === "leaderboard" && (
-        <Leaderboard players={players} onNext={() => setCurrentView("round")} />
+        <Leaderboard
+          players={players}
+          onNext={goToNextRoundOrEnd} // <- switch to next round or end
+        />
       )}
       {currentView === "end" && <End players={players} />}
     </div>
