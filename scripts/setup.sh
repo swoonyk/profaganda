@@ -16,32 +16,26 @@ pnpm install
 # Copy environment files
 echo "⚙️  Setting up environment files..."
 
-if [ ! -f "apps/web/.env.local" ]; then
-    cp apps/web/.env.example apps/web/.env.local
-    echo "✅ Created apps/web/.env.local"
-fi
-
-if [ ! -f "apps/api/.env" ]; then
-    cp apps/api/.env.example apps/api/.env
-    echo "✅ Created apps/api/.env"
-fi
-
-if [ ! -f "apps/pipeline/.env" ]; then
-    cp apps/pipeline/.env.example apps/pipeline/.env
-    echo "✅ Created apps/pipeline/.env"
+if [ ! -f ".env" ]; then
+    cp env.example .env
+    echo "✅ Created .env file from env.example"
 fi
 
 echo ""
 echo "🎉 Setup complete!"
 echo ""
 echo "Next steps:"
-echo "1. Configure your environment variables in the .env files"
+echo "1. Configure your .env file with:"
+echo "   - DATABASE_URL (PostgreSQL connection string)"
+echo "   - GEMINI_API_KEY (from https://aistudio.google.com/apikey)"
 echo "2. Set up your PostgreSQL database"
-echo "3. Add your API keys (Gemini, RateMyProfessor, etc.)"
-echo "4. Run 'pnpm dev' to start all services"
+echo "3. Run 'pnpm db:setup' to set up database and ingest initial data"
+echo "4. Run 'pnpm api:dev' to start the API server"
+echo "5. Run 'pnpm web:dev' to start the web app"
 echo ""
 echo "Available commands:"
-echo "  pnpm dev        - Start all services"
-echo "  pnpm web:dev    - Start web app (port 3000)"
-echo "  pnpm api:dev    - Start API server (port 4000)"
-echo "  pnpm pipeline:dev - Start pipeline service"
+echo "  pnpm db:setup       - Set up database and ingest data"
+echo "  pnpm api:dev        - Start API server (port 3001)"
+echo "  pnpm web:dev        - Start web app (port 3000)"
+echo "  pnpm pipeline:ingest - Run review ingestion pipeline"
+echo "  pnpm pipeline:stats  - Show database statistics"

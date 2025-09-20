@@ -12,7 +12,11 @@
     "type-check": "pnpm --recursive type-check",
     "web:dev": "pnpm --filter web dev",
     "api:dev": "pnpm --filter api dev",
-    "pipeline:dev": "pnpm --filter pipeline dev"
+    "pipeline:dev": "pnpm --filter pipeline dev",
+    "pipeline:ingest": "pnpm --filter pipeline start ingest",
+    "pipeline:stats": "pnpm --filter pipeline start stats",
+    "db:migrate": "pnpm --filter database migrate",
+    "db:setup": "pnpm db:migrate && pnpm pipeline:ingest"
   },
   "devDependencies": {
     "typescript": "^5.8.2",

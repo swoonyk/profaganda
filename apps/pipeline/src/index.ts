@@ -1,5 +1,7 @@
-import { createPool } from '@profaganda/database';
+import { createPool, runMigrations, closePool } from '@profaganda/database';
 import type { PipelineConfig } from '@profaganda/shared';
+import { fetchMockReviews } from './ingestion/mock-data.js';
+import { SanitizationProcessor } from './sanitization/processor.js';
 
 function loadConfig(): PipelineConfig {
   const requiredEnvVars = ['GEMINI_API_KEY', 'DATABASE_URL'];
@@ -13,9 +15,8 @@ function loadConfig(): PipelineConfig {
   return {
     geminiApiKey: process.env.GEMINI_API_KEY!,
     databaseUrl: process.env.DATABASE_URL!,
-    batchSize: parseInt(process.env.BATCH_SIZE || '20'),
+    batchSize: parseInt(process.env.BATCH_SIZE || '5'),
     school: process.env.SCHOOL || 'Cornell',
-    sanitizationVersion: process.env.SANITIZATION_VERSION || '1.0.0',
     minReviewLength: parseInt(process.env.MIN_REVIEW_LENGTH || '30'),
     maxReviewLength: parseInt(process.env.MAX_REVIEW_LENGTH || '3000'),
     maxRetries: parseInt(process.env.MAX_RETRIES || '2'),
@@ -24,21 +25,85 @@ function loadConfig(): PipelineConfig {
 }
 
 async function main() {
+  const startTime = Date.now();
+  
   try {
-    console.log('Starting review sanitization pipeline...');
+    console.log('🚀 Starting review ingestion and sanitization pipeline...');
     
     const config = loadConfig();
-    createPool(config.databaseUrl);
+    const pool = createPool(config.databaseUrl);
     
-    console.log(`Pipeline configured for ${config.school}`);
-    console.log('Pipeline setup complete - ready for implementation');
+    console.log('📊 Setting up database...');
+    await runMigrations(pool);
+    
+    const processor = new SanitizationProcessor(config.geminiApiKey, pool);
+    
+    const initialStats = await processor.getProcessingStats();
+    console.log(`📈 Initial stats: ${initialStats.professors} professors, ${initialStats.reviews} reviews`);
+    
+    console.log('📥 Fetching reviews...');
+    const { reviews, professors } = await fetchMockReviews();
+    console.log(`✅ Fetched ${reviews.length} reviews from ${professors.length} professors`);
+    
+    const validReviews = reviews.filter(review => 
+      review.text.length >= config.minReviewLength && 
+      review.text.length <= config.maxReviewLength
+    );
+    
+    if (validReviews.length !== reviews.length) {
+      console.log(`📏 Filtered to ${validReviews.length} valid reviews (${reviews.length - validReviews.length} excluded by length)`);
+    }
+    
+    if (validReviews.length === 0) {
+      console.log('⚠️  No valid reviews to process');
+      return;
+    }
+    
+    console.log(`🤖 Starting sanitization with Gemini API (batch size: ${config.batchSize})...`);
+    await processor.processBatch(validReviews, config.batchSize);
+    
+    const finalStats = await processor.getProcessingStats();
+    console.log(`📊 Final stats: ${finalStats.professors} professors, ${finalStats.reviews} reviews`);
+    
+    const processingTime = (Date.now() - startTime) / 1000;
+    console.log(`✅ Pipeline completed successfully in ${processingTime.toFixed(2)}s`);
+    console.log(`📈 Processed ${finalStats.reviews - initialStats.reviews} new reviews`);
     
   } catch (error) {
-    console.error('Pipeline failed:', error);
+    console.error('❌ Pipeline failed:', error);
     process.exit(1);
+  } finally {
+    await closePool();
   }
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+const command = process.argv[2];
+
+if (command === 'ingest') {
   main();
+} else if (command === 'stats') {
+  statsCommand();
+} else if (import.meta.url === `file://${process.argv[1]}`) {
+  console.log('Available commands:');
+  console.log('  pnpm pipeline:ingest  - Run ingestion and sanitization');
+  console.log('  pnpm pipeline:stats   - Show database statistics');
+}
+
+async function statsCommand() {
+  try {
+    const config = loadConfig();
+    const pool = createPool(config.databaseUrl);
+    const processor = new SanitizationProcessor(config.geminiApiKey, pool);
+    
+    const stats = await processor.getProcessingStats();
+    console.log('📊 Database Statistics:');
+    console.log(`   Professors: ${stats.professors}`);
+    console.log(`   Reviews: ${stats.reviews}`);
+    
+  } catch (error) {
+    console.error('Failed to get stats:', error);
+    process.exit(1);
+  } finally {
+    await closePool();
+  }
 }
