@@ -108,6 +108,11 @@ export function useGameActions() {
     }
     currentRoundIdRef.current = null;
     playerIdRef.current = null;
+    
+    // Clear stored game mode when leaving game
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("selectedGameMode");
+    }
   }, [socket]);
 
   return {
