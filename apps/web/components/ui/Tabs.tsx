@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 
 interface TabsProps {
   tabs: string[];
@@ -14,7 +14,7 @@ export default function Tabs({ tabs, onTabChange }: TabsProps) {
     if (onTabChange) onTabChange(i);
   };
 
-  const handleKeyDown = (e: KeyboardEvent) => {
+  const handleKeyDown = useCallback((e: KeyboardEvent) => {
     if (e.key === "ArrowRight") {
       setActive((prev) => {
         const next = (prev + 1) % tabs.length;
@@ -29,7 +29,7 @@ export default function Tabs({ tabs, onTabChange }: TabsProps) {
         return next;
       });
     }
-  };
+  }, [tabs.length, onTabChange]);
 
   useEffect(() => {
     const node = containerRef.current;
@@ -39,7 +39,7 @@ export default function Tabs({ tabs, onTabChange }: TabsProps) {
     return () => {
       node.removeEventListener("keydown", handleKeyDown);
     };
-  }, []);
+  }, [handleKeyDown]);
 
   return (
     <div

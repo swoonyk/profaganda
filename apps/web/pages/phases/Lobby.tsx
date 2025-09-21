@@ -99,7 +99,7 @@ export default function Lobby({ muted, toggleMute }: LobbyProps) {
               onClick={() => setSelectedMode("A")}
             >
               <h4>Mode 1: Guess the Professor</h4>
-              <p>Given a review, guess which professor it's about</p>
+              <p>Given a review, guess which professor it&apos;s about</p>
             </div>
             <div 
               className={`mode-option ${selectedMode === "B" ? "selected" : ""}`}
