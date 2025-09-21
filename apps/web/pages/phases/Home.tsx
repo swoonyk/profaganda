@@ -37,7 +37,7 @@ export default function Home({ onStartLobby }: HomeProps) {
   if (view === "buttons") {
     return (
       <main className="start">
-        <div className="panel">
+        <div className="panel yPadding">
           <div className="top">
             <h1>Profaganda!</h1>
             <p>Race your friends to guess the right professor!</p>
@@ -60,7 +60,7 @@ export default function Home({ onStartLobby }: HomeProps) {
   if (view === "create") {
     return (
       <main>
-        <div className="panel">
+        <div className="panel yPadding">
           <div className="inner">
             <h2>Create Game</h2>
             <input
@@ -99,7 +99,7 @@ export default function Home({ onStartLobby }: HomeProps) {
   if (view === "join") {
     return (
       <main>
-        <div className="panel">
+        <div className="panel yPadding">
           <div className="inner">
             <h2>Join Game</h2>
             <input
