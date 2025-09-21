@@ -696,6 +696,38 @@ button:disabled {
 }
 
 
+.mode-selection {
+  margin: 20px 0;
+}
+
+.mode-options {
+  display: flex;
+  gap: 12px;
+}
+
+.mode-option {
+  flex: 1;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+  color: #fff;
+  font-size: 14px;
+}
+
+.mode-option:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+.mode-option.selected {
+  background: rgba(10, 214, 161, 0.2);
+  border-color: #0ad6a1;
+}
+
 .end {
   text-align: center;
   font-family: sans-serif;
