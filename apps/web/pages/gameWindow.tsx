@@ -53,7 +53,7 @@ export default function GameWindow() {
     return (
       <div style={{ padding: 20, textAlign: "center" }}>
         <h2>Connecting to server...</h2>
-        <p>Make sure the socket server is running on port 4000</p>
+        <p>Attempting to connect to the game server...</p>
       </div>
     );
   }
