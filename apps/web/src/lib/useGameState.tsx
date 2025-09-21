@@ -113,7 +113,7 @@ export function useGameState() {
         phase: "round",
         roundId,
         options,
-        gameMode: mode, // server may override with chosen mode
+        gameMode: mode, // server may set the chosen mode
         gameData,
         roundEndsAt, // may be undefined; UI falls back to local timer
       }));
