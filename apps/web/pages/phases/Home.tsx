@@ -58,34 +58,6 @@ export default function Home({ onStartLobby, muted, toggleMute }: HomeProps) {
           </div>
         </main>
       )}
-<<<<<<< Updated upstream
-
-      {view === "create" && (
-        <main className="create">
-          <div className="panel yPadding">
-            <h2>Create Game</h2>
-            <input
-              type="text"
-              placeholder="Enter your name"
-              autoFocus
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleCreate()}
-            />
-            {error && <p className="error-text">{error}</p>}
-            <div className="buttons">
-              <Button onClick={handleCreate}>Start Lobby</Button>
-              <Button
-                onClick={() => {
-                  setView("buttons");
-                  setName("");
-                  setError("");
-                }}
-                variant="secondary"
-              >
-                Back
-              </Button>
-=======
       {view === "create" && (
         <main>
           <div className="panel yPadding create">
@@ -154,7 +126,6 @@ export default function Home({ onStartLobby, muted, toggleMute }: HomeProps) {
                   <span>Back</span>
                 </Button>
               </div>
->>>>>>> Stashed changes
             </div>
           </div>
         </main>
