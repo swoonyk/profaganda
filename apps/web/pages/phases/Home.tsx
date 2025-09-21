@@ -68,6 +68,11 @@ export default function Home({ onStartLobby }: HomeProps) {
               placeholder="Enter your name"
               value={name}
               onChange={(e) => setName(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && name.trim()) {
+                  handleCreate();
+                }
+              }}
             />
 
             <div className="buttons">
@@ -84,8 +89,6 @@ export default function Home({ onStartLobby }: HomeProps) {
               >
                 Back
               </Button>
-
-              {/* <Button disabled={!name} onClick={() => onStartLobby(name, true)}> */}
             </div>
 
             {error && <p className="error-text">{error}</p>}
@@ -107,22 +110,26 @@ export default function Home({ onStartLobby }: HomeProps) {
               placeholder="Enter your name"
               value={name}
               onChange={(e) => setName(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && name.trim() && code.trim()) {
+                  handleJoin();
+                }
+              }}
             />
             <input
               type="text"
               placeholder="Enter game code"
               value={code}
               onChange={(e) => setCode(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && name.trim() && code.trim()) {
+                  handleJoin();
+                }
+              }}
             />
 
             <div className="buttons">
-              <Button
-                // disabled={!name || !code}
-                // onClick={() => onStartLobby(name, false, code)}
-                onClick={handleJoin}
-              >
-                Join Lobby
-              </Button>
+              <Button onClick={handleJoin}>Join Lobby</Button>
 
               <Button
                 onClick={() => {
@@ -137,6 +144,7 @@ export default function Home({ onStartLobby }: HomeProps) {
                 Back
               </Button>
             </div>
+
             {error && <p className="error-text">{error}</p>}
           </div>
         </div>

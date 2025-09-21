@@ -78,7 +78,7 @@ export default function Lobby({
             Back
           </Button>
 
-          <Button onClick={onStart}>Start</Button>
+          <Button onClick={onStart}>Start!</Button>
         </div>
       </div>
     </main>

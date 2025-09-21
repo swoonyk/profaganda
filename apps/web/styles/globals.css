@@ -177,6 +177,7 @@ button:disabled {
 
 .error-text {
   color: #ff5d5d;
+  font-size: 20px;
 }
 
 .lobby {
