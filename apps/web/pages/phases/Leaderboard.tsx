@@ -2,6 +2,7 @@ import React from "react";
 import { Button } from "components/ui/Button";
 import { useGameState } from "@/lib/useGameState";
 import { useGameActions } from "@/lib/useGameActions";
+import MuteButton from "components/MuteButton";
 
 function LeaderboardItem({
   player,
@@ -20,12 +21,19 @@ function LeaderboardItem({
   );
 }
 
-export default function Leaderboard() {
+type LeaderboardProps = {
+  muted: boolean;
+  toggleMute: () => void;
+};
+
+export default function Leaderboard({ muted, toggleMute }: LeaderboardProps) {
   const { players, roundNumber } = useGameState();
   const { startRound } = useGameActions();
 
   return (
     <div className="leaderboard">
+      <MuteButton muted={muted} toggleMute={toggleMute} />
+      
       <div className="header">
         <h1>Leaderboard</h1>
         <p>Question {roundNumber} out of 5</p>

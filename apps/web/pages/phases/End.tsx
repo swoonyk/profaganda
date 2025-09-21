@@ -1,8 +1,14 @@
 import React from "react";
 import { useGameState } from "@/lib/useGameState";
 import { useGameActions } from "@/lib/useGameActions";
+import MuteButton from "components/MuteButton";
 
-export default function End() {
+type EndProps = {
+  muted: boolean;
+  toggleMute: () => void;
+};
+
+export default function End({ muted, toggleMute }: EndProps) {
   const { players } = useGameState();
   const { leaveGame } = useGameActions();
 
@@ -12,6 +18,8 @@ export default function End() {
 
   return (
     <div className="end">
+      <MuteButton muted={muted} toggleMute={toggleMute} />
+      
       <h2>Game Over</h2>
       <p>
         Winner: {winner.name} with {winner.points} points!
