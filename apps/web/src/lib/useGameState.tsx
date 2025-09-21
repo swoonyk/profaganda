@@ -1,5 +1,63 @@
-import { useCallback, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useSocket } from "./useSocket";
+
+// Game state hook
+export function useGameState() {
+  const socket = useSocket();
+  const [players, setPlayers] = useState([]);
+  const [roundNumber, setRoundNumber] = useState(1);
+  const [phase, setPhase] = useState("home");
+  const [partyId, setPartyId] = useState("");
+  const [gameMode, setGameMode] = useState("A");
+  const [gameData, setGameData] = useState(null);
+  const [options, setOptions] = useState([]);
+  const [roundId, setRoundId] = useState("");
+  const [roundEndsAt, setRoundEndsAt] = useState(null);
+
+  useEffect(() => {
+    if (!socket) return;
+
+    const onPlayersUpdate = (data: any) => setPlayers(data.players || []);
+    const onPhaseChange = (data: any) => setPhase(data.phase);
+    const onRoundStarted = (data: any) => {
+      setRoundId(data.roundId);
+      setOptions(data.options || []);
+      setGameData(data.gameData);
+      setRoundEndsAt(data.roundEndsAt);
+      setPhase("round");
+    };
+    const onRoundResults = () => setPhase("leaderboard");
+    const onGameEnd = () => setPhase("end");
+
+    socket.on("server:players_update", onPlayersUpdate);
+    socket.on("server:phase_change", onPhaseChange);
+    socket.on("server:round_started", onRoundStarted);
+    socket.on("server:round_results", onRoundResults);
+    socket.on("server:game_end", onGameEnd);
+
+    return () => {
+      socket.off("server:players_update", onPlayersUpdate);
+      socket.off("server:phase_change", onPhaseChange);
+      socket.off("server:round_started", onRoundStarted);
+      socket.off("server:round_results", onRoundResults);
+      socket.off("server:game_end", onGameEnd);
+    };
+  }, [socket]);
+
+  return {
+    players,
+    roundNumber,
+    phase,
+    partyId,
+    gameMode,
+    gameData,
+    options,
+    roundId,
+    roundEndsAt,
+  };
+}
+
+import { useCallback, useEffect, useRef } from "react";
 
 export function useGameActions() {
   const socket = useSocket();
@@ -7,6 +65,8 @@ export function useGameActions() {
   const playerIdRef = useRef<string | null>(null);
 
   // Capture roundId for all clients when a round starts
+
+  
   useEffect(() => {
     if (!socket) return;
 
