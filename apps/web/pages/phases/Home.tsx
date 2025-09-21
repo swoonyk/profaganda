@@ -14,7 +14,16 @@ export default function Home({ onStartLobby, muted, toggleMute }: HomeProps) {
   const [name, setName] = useState("");
   const [code, setCode] = useState("");
   const [error, setError] = useState("");
-  const [selectedMode, setSelectedMode] = useState<"A" | "B">("A");
+  
+  // Initialize selectedMode from localStorage or default to "A"
+  const [selectedMode, setSelectedMode] = useState<"A" | "B">(() => {
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem("selectedGameMode") as "A" | "B" | null;
+      return stored || "A";
+    }
+    return "A";
+  });
+
   
   console.log("Home - selectedMode:", selectedMode);
 
@@ -120,7 +129,14 @@ export default function Home({ onStartLobby, muted, toggleMute }: HomeProps) {
                 <Tabs
                   tabs={["Mode A", "Mode B"]}
                   activeTab={selectedMode === "A" ? 0 : 1}
-                  onTabChange={(i) => setSelectedMode(i === 0 ? "A" : "B")}
+                  onTabChange={(i) => {
+                    const newMode = i === 0 ? "A" : "B";
+                    setSelectedMode(newMode);
+                    // Immediately update localStorage when mode is changed
+                    if (typeof window !== "undefined") {
+                      localStorage.setItem("selectedGameMode", newMode);
+                    }
+                  }}
                 />
 
                 <Button onClick={handleCreate}>
