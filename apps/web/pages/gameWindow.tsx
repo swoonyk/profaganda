@@ -33,7 +33,12 @@ export default function GameWindow({ muted, toggleMute }: GameWindowProps) {
   useEffect(() => setIsClient(true), []);
   // const forcedPhase = "round";
 
-  const handleStartLobby = (name: string, isHost: boolean, code?: string, mode?: "A" | "B") => {
+  const handleStartLobby = (
+    name: string,
+    isHost: boolean,
+    code?: string,
+    mode?: "A" | "B"
+  ) => {
     // Create a temporary playerId for optimistic UI
     const tempPlayerId = "temp_" + Math.random().toString(36).substr(2, 9);
 
@@ -68,35 +73,35 @@ export default function GameWindow({ muted, toggleMute }: GameWindowProps) {
     );
   }
 
-  // switch (phase) {
-  //   case "home":
-  //     return (
-  //       <Home
-  //         onStartLobby={handleStartLobby}
-  //         muted={muted}
-  //         toggleMute={toggleMute}
-  //       />
-  //     );
+  switch (phase) {
+    case "home":
+      return (
+        <Home
+          onStartLobby={handleStartLobby}
+          muted={muted}
+          toggleMute={toggleMute}
+        />
+      );
 
-  //   case "lobby":
-  //     return <Lobby muted={muted} toggleMute={toggleMute} />;
+    case "lobby":
+      return <Lobby muted={muted} toggleMute={toggleMute} />;
 
-  //   case "round":
-  //     return gameMode === "B" ? (
-  //       <RoundMode2 muted={muted} toggleMute={toggleMute} gameData={gameData} />
-  //     ) : (
-  //       <Round muted={muted} toggleMute={toggleMute} />
-  //     );
+    case "round":
+      return gameMode === "B" ? (
+        <RoundMode2 muted={muted} toggleMute={toggleMute} gameData={gameData} />
+      ) : (
+        <Round muted={muted} toggleMute={toggleMute} />
+      );
 
-  //   case "leaderboard":
-  //     return <Leaderboard muted={muted} toggleMute={toggleMute} />;
+    case "leaderboard":
+      return <Leaderboard muted={muted} toggleMute={toggleMute} />;
 
-  //   case "end":
-  //     return <End muted={muted} toggleMute={toggleMute} />;
+    case "end":
+      return <End muted={muted} toggleMute={toggleMute} />;
 
-  //   default:
-  //     return null;
-  // }
+    default:
+      return null;
+  }
 
-  return <End muted={muted} toggleMute={toggleMute} />;
+  // return <End muted={muted} toggleMute={toggleMute} />;
 }
