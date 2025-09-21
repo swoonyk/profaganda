@@ -14,7 +14,14 @@ export default function Lobby({ muted, toggleMute }: LobbyProps) {
   const { startRound, leaveGame } = useGameActions();
   const [copied, setCopied] = useState(false);
   const maxPlayers = 4;
-  const selectedMode = gameMode || "A"; // Get mode from game state
+  
+  // Get mode from game state, localStorage, or default to A
+  const storedMode = typeof window !== "undefined" 
+    ? localStorage.getItem("selectedGameMode") as "A" | "B" | null
+    : null;
+  const selectedMode = gameMode || storedMode || "A";
+  
+  console.log("Lobby - gameMode:", gameMode, "storedMode:", storedMode, "selectedMode:", selectedMode);
 
   const handleCopy = () => {
     navigator.clipboard.writeText(partyId || "").then(() => {
