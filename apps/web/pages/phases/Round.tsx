@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react";
-import { Button } from "components/ui/Button";
+
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useGameState } from "@/lib/useGameState";
 import { useGameActions } from "@/lib/useGameActions";
 import MuteButton from "components/MuteButton";
@@ -9,23 +9,124 @@ type RoundProps = {
   toggleMute: () => void;
 };
 
+/**
+ * Behavior:
+ * - Renders ONLY dynamic options from state (no hardcoding).
+ * - Allows free selection & re-selection while timer > 0 and not locked.
+ * - Locks selection when:
+ *    1) time runs out, or
+ *    2) all players have answered (server sets players[].hasAnswered = true).
+ * - Does NOT reveal correctness in this phase.
+ * - Does NOT navigate phase locally; waits for server:round_results which your useGameState handles.
+ */
 export default function Round({ muted, toggleMute }: RoundProps) {
-  const { players, roundNumber, options = [] } = useGameState();
-  const { submitAnswer } = useGameActions();
-  const [timeLeft, setTimeLeft] = useState(30);
+  const {
+    phase,
+    players,
+    roundNumber,
+    options = [],
+    roundId,
+    gameMode,
+    gameData,
+    roundEndsAt, // if server provides it; otherwise, we fallback to local 30s
+  } = useGameState();
 
+  const { submitAnswer } = useGameActions();
+
+  const [timeLeft, setTimeLeft] = useState<number>(30);
+  const [selected, setSelected] = useState<string | null>(null);
+  const [isLocked, setIsLocked] = useState<boolean>(false);
+  const endedRef = useRef(false);
+
+  // Are hasAnswered flags present from server?
+  const hasFlags = useMemo(
+    () => players.some((p: any) => typeof p?.hasAnswered === "boolean"),
+    [players]
+  );
+
+  const answeredCount = useMemo(
+    () => (hasFlags ? players.filter((p: any) => p?.hasAnswered).length : 0),
+    [players, hasFlags]
+  );
+
+  const allAnswered = useMemo(
+    () => (hasFlags ? players.length > 0 && players.every((p: any) => p.hasAnswered) : false),
+    [players, hasFlags]
+  );
+
+  // Reset per round
   useEffect(() => {
-    const interval = setInterval(() => {
-      setTimeLeft((prev) => {
-        if (prev <= 1) {
+    endedRef.current = false;
+    setIsLocked(false);
+    setSelected(null);
+    if (!roundEndsAt) setTimeLeft(30);
+  }, [roundId, roundNumber, roundEndsAt]);
+
+  // Timer: prefer server's authoritative end time; fallback to local countdown
+  useEffect(() => {
+    let interval: number | undefined;
+    if (phase !== "round") return;
+
+    if (roundEndsAt) {
+      const compute = () => Math.max(0, Math.ceil((new Date(roundEndsAt).getTime() - Date.now()) / 1000));
+      const tick = () => {
+        const t = compute();
+        setTimeLeft(t);
+        if (t <= 0) {
           clearInterval(interval);
-          return 0;
+          lock("time");
         }
-        return prev - 1;
-      });
-    }, 1000);
-    return () => clearInterval(interval);
-  }, []);
+      };
+      setTimeLeft(compute());
+      interval = window.setInterval(tick, 250);
+    } else {
+      // local fallback
+      interval = window.setInterval(() => {
+        setTimeLeft((prev) => {
+          const next = Math.max(0, prev - 1);
+          if (next <= 0) {
+            clearInterval(interval);
+            lock("time");
+          }
+          return next;
+        });
+      }, 1000);
+    }
+
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [roundEndsAt, phase]);
+
+  // Lock early if all players have answered
+  useEffect(() => {
+    if (allAnswered) lock("all-answered");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [allAnswered]);
+
+  function lock(_reason: "time" | "all-answered") {
+    if (endedRef.current) return;
+    endedRef.current = true;
+    setIsLocked(true);
+    // Do not change phase here; server will emit server:round_results -> useGameState moves to leaderboard
+  }
+
+  function onSelect(opt: string) {
+    if (phase !== "round" || isLocked || timeLeft <= 0) return;
+    setSelected(opt);   // local feedback; allow changes until locked
+    submitAnswer(opt);  // server should set hasAnswered=true and broadcast via server:players_update
+  }
+
+  const canSelect = phase === "round" && !isLocked && timeLeft > 0 && !allAnswered;
+
+  // Try multiple keys for prompt text (adjust to your gameData shape)
+  const questionText =
+    gameData?.reviewText ??
+    gameData?.question ??
+    gameData?.prompt ??
+    gameData?.text ??
+    "";
 
   return (
     <div className="round">
@@ -36,80 +137,49 @@ export default function Round({ muted, toggleMute }: RoundProps) {
         <p>Question {roundNumber} / 5</p>
         <p style={{ fontSize: 12, color: "#ffff" }}>
           Players: {players.length}
+          {hasFlags ? ` • ${answeredCount}/${players.length} answered` : ""}
         </p>
       </div>
 
       <div className="scoreboard">
-        {players.map((p) => (
-          <p key={p.name}>
-            {p.name}: {p.points} {p.yourself && "(you)"}
+        {players.map((p: any) => (
+          <p key={p.playerId}>
+            {p.name}: {p.points} {p.yourself && "(you)"} {hasFlags && p.hasAnswered ? "✓" : ""}
           </p>
         ))}
       </div>
 
       <div className="panel">
-        <p>
-          They are hands down one of the best professors. ever. They are very
-          engaging and has very well planned out lectures and slides, and as
-          someone who has never taken a CS class before, they made all the basic
-          concepts easy to learn.
-        </p>
+        <p>{questionText}</p>
       </div>
 
-      <ul>
-        {options.map((opt, i) => (
-          <li key={i}>
-            <div className="option" onClick={() => submitAnswer(opt)}>
-              {opt}
-            </div>
-          </li>
-        ))}
-
-        {/* gotta manually apply colors andicons */}
-        <div className="options-grid">
-          <div className="option">Anton Mosunov</div>
-
-          <div className="option">me</div>
-
-          <div className="option correct">
-            <div className="checkmark">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
+      <ul className="options-grid">
+        {options.map((opt: string, i: number) => {
+          const isSelected = selected === opt;
+          return (
+            <li key={`${i}-${opt}`}>
+              <button
+                type="button"
+                onClick={() => onSelect(opt)}
+                disabled={!canSelect}
+                className={[
+                  "option",
+                  isSelected ? "selected" : "",
+                  !canSelect ? "disabled" : "",
+                ].join(" ")}
+                aria-pressed={isSelected}
               >
-                <path d="M20 6 9 17l-5-5" />
-              </svg>
-            </div>
-            Walker White
-          </div>
-          <div className="option incorrect">
-            <div className="checkmark">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M18 6 6 18" />
-                <path d="m6 6 12 12" />
-              </svg>
-            </div>
-            Matthew Eichhorn
-          </div>
-        </div>
+                {opt}
+              </button>
+            </li>
+          );
+        })}
       </ul>
+
+      <div className="footer">
+        {canSelect && selected && <p>Answer chosen. You can change it until time runs out.</p>}
+        {!canSelect && (timeLeft <= 0 || allAnswered) && <p>Time’s up! Waiting for results…</p>}
+      </div>
     </div>
   );
 }

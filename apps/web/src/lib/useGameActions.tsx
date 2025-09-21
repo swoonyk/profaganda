@@ -1,10 +1,30 @@
-import { useCallback, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { useSocket } from "./useSocket";
 
 export function useGameActions() {
   const socket = useSocket();
   const currentRoundIdRef = useRef<string | null>(null);
   const playerIdRef = useRef<string | null>(null);
+
+  // Capture roundId for all clients when a round starts
+  useEffect(() => {
+    if (!socket) return;
+
+    const onRoundStarted = ({ roundId }: { roundId: string }) => {
+      currentRoundIdRef.current = roundId;
+    };
+    const onRoundResults = () => {
+      // optional: clear on results if you want
+      // currentRoundIdRef.current = null;
+    };
+
+    socket.on("server:round_started", onRoundStarted);
+    socket.on("server:round_results", onRoundResults);
+    return () => {
+      socket.off("server:round_started", onRoundStarted);
+      socket.off("server:round_results", onRoundResults);
+    };
+  }, [socket]);
 
   const joinGame = useCallback(
     (name: string, isHost: boolean, code?: string) => {
@@ -30,29 +50,22 @@ export function useGameActions() {
       const roundId = `round-${Date.now()}`;
       currentRoundIdRef.current = roundId;
 
-      let gameData;
-      let correctAnswer;
+      let gameData: any;
+      let correctAnswer: any;
       let options: string[] = [];
 
       try {
-        // Use relative API paths for same-origin requests (no CORS issues)
         if (mode === "A") {
           const response = await fetch("/api/game/mode1/question");
-          if (!response.ok) {
-            throw new Error(
-              `API request failed: ${response.status} ${response.statusText}`
-            );
-          }
+          if (!response.ok)
+            throw new Error(`API request failed: ${response.status} ${response.statusText}`);
           gameData = await response.json();
           correctAnswer = gameData.correctProfessorId;
           options = gameData.professorOptions.map((p: any) => p._id);
         } else {
           const response = await fetch("/api/game/mode2/question");
-          if (!response.ok) {
-            throw new Error(
-              `API request failed: ${response.status} ${response.statusText}`
-            );
-          }
+          if (!response.ok)
+            throw new Error(`API request failed: ${response.status} ${response.statusText}`);
           gameData = await response.json();
           correctAnswer = gameData.isRealReview; // true if real, false if AI
           options = ["real", "ai"];
@@ -64,6 +77,8 @@ export function useGameActions() {
           correctAnswer,
           options,
           gameData,
+          // Prefer computing roundEndsAt on the server and including it in server:round_started
+          // roundEndsAt: new Date(Date.now() + 30_000).toISOString()
         });
       } catch (error) {
         console.error("Failed to start round:", error);
@@ -75,9 +90,7 @@ export function useGameActions() {
   const submitAnswer = useCallback(
     (choice: boolean | string) => {
       if (!socket || !currentRoundIdRef.current) {
-        console.error(
-          "No socket connection or active round to submit answer to"
-        );
+        console.error("No socket connection or active round to submit answer to");
         return;
       }
 
