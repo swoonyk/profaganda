@@ -1,6 +1,7 @@
 import { Button } from "components/ui/Button";
 import React, { useState } from "react";
 import MuteButton from "components/MuteButton";
+import Tabs from "components/ui/Tabs";
 
 type HomeProps = {
   onStartLobby: (name: string, isHost: boolean, code?: string) => void;
@@ -57,6 +58,7 @@ export default function Home({ onStartLobby, muted, toggleMute }: HomeProps) {
           </div>
         </main>
       )}
+<<<<<<< Updated upstream
 
       {view === "create" && (
         <main className="create">
@@ -83,6 +85,76 @@ export default function Home({ onStartLobby, muted, toggleMute }: HomeProps) {
               >
                 Back
               </Button>
+=======
+      {view === "create" && (
+        <main>
+          <div className="panel yPadding create">
+            <h2>Create Game</h2>
+
+            <div className="inner">
+              <div className="input">
+                <input
+                  type="text"
+                  placeholder="Enter your name"
+                  autoFocus
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && handleCreate()}
+                />
+                {error && (
+                  <div className="error">
+                    <p>{error}</p>
+                  </div>
+                )}
+              </div>
+
+              <Tabs
+                tabs={["Mode A", "Mode B"]}
+                onTabChange={(i) => console.log("Active tab:", i)}
+              />
+
+              <div className="buttons">
+                <Button onClick={handleCreate}>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z" />
+                  </svg>
+                  <span>Start lobby</span>
+                </Button>
+                <Button
+                  onClick={() => {
+                    setView("buttons");
+                    setName("");
+                    setError("");
+                  }}
+                  variant="secondary"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M13 9a1 1 0 0 1-1-1V5.061a1 1 0 0 0-1.811-.75l-6.835 6.836a1.207 1.207 0 0 0 0 1.707l6.835 6.835a1 1 0 0 0 1.811-.75V16a1 1 0 0 1 1-1h6a1 1 0 0 0 1-1v-4a1 1 0 0 0-1-1z" />
+                  </svg>
+                  <span>Back</span>
+                </Button>
+              </div>
+>>>>>>> Stashed changes
             </div>
           </div>
         </main>
