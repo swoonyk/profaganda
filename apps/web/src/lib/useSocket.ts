@@ -18,7 +18,7 @@ export function useSocket(): Socket | null {
       return null;
     }
     
-    if (!socket) {
+    if (!socket && url) {
       // Determine if we should use secure connection based on URL or current page protocol
       const isSecure = url.startsWith('https://') || url.startsWith('wss://') || 
                       (typeof window !== 'undefined' && window.location.protocol === 'https:');
@@ -62,7 +62,7 @@ export function useSocket(): Socket | null {
         console.log(`Reconnection attempt ${attempt}`);
       });
     }
-    return socket;
+    return url ? socket : null;
   }, [isClient, url]);
 
   useEffect(() => {
