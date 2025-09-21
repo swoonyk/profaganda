@@ -51,7 +51,7 @@ export default function Lobby({
         </div>
 
         <div className="buttons">
-          <Button variant="secondary row" className="back">
+          <Button variant="secondary" className="back">
             Back
           </Button>
 
