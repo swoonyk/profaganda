@@ -77,19 +77,66 @@ main p {
 
 .leaderboard {
   width: 1000px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  height: 600px;
 }
 
 .leaderboard .header,
 .round .header {
   display: flex;
   justify-content: space-between;
+  align-items: flex-end;
 }
 
-.leaderboard ul li {
+.leaderboard .top {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+}
+
+.leaderboard ul {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+}
+
+.leaderboard ul li,
+.end ul li {
   list-style-type: none;
-  padding: 8px;
+  padding: 16px;
   border-radius: 8px;
   background: rgba(0 0 0 / 20%);
+  display: flex;
+  justify-content: space-between;
+}
+
+.end ul {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 400px;
+  margin: 0 auto;
+  margin-top: 32px;
+}
+
+.end ul li.yourself {
+  background: #fff;
+  color: #000;
+}
+
+.leaderboard ul li p,
+.end ul li p {
+  font-size: 20px;
+}
+
+.leaderboard ul li p.pts,
+.end ul li p.pts {
+  font-family: "Cherry Cream Soda", system-ui;
 }
 
 .leaderboard-item.yourself {
@@ -351,6 +398,7 @@ button:disabled {
   font-size: 150px;
   opacity: 20%;
   font-family: "Cherry Cream Soda", system-ui;
+  bottom: -120px;
 }
 
 .round .option {
@@ -362,6 +410,40 @@ button:disabled {
   box-shadow: 0 6px 0 #a6a6a6;
   transition: 120ms ease-out;
   cursor: pointer;
+  width: 100%;
+  color: black;
+  font-family: "Cherry Cream Soda", system-ui;
+  font-size: 150%;
+  display: flex;
+  align-items: center; /* vertical centering */
+  justify-content: center; /* horizontal centering */
+  text-align: center; /* for multi-line text */
+  position: relative;
+  overflow: hidden;
+}
+
+.option .checkmark,
+.option .xmark {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 64px;
+  height: 64px;
+  border-bottom-left-radius: 8px;
+  background-color: #ff5d5d;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.option.correct .checkmark {
+  background-color: #0ad6a1 !important;
+}
+
+.option .checkmark svg {
+  width: 32px;
+  height: 32px;
+  color: white;
 }
 
 .round .option:hover {
@@ -388,6 +470,14 @@ button:disabled {
   border: 2px solid #ff5d5d;
   box-shadow: 0 6px 0 #ff5d5d;
   transform: none;
+}
+
+.round .options-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr); /* 2 columns */
+  grid-template-rows: repeat(2, 1fr); /* 2 rows */
+  gap: 10px; /* spacing between options */
+  width: 1000px;
 }
 
 .create .inner,
@@ -603,4 +693,58 @@ button:disabled {
 .tabs-container:focus-visible {
   outline: 4px solid #0ad6a1;
   outline-offset: 4px;
+}
+
+.end {
+  text-align: center;
+  font-family: sans-serif;
+}
+.podium {
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  gap: 1rem;
+  margin: 2rem 0;
+  flex: 1;
+  width: 100%;
+}
+.podium-step {
+  width: 100px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+}
+.podium-step .player-name {
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+}
+.podium-step .player-points {
+  margin-bottom: 0.5rem;
+}
+.podium-step .podium-base {
+  background: #ccc;
+  width: 100%;
+  text-align: center;
+  font-weight: bold;
+  padding: 0.5rem 0;
+  border-radius: 2px 2px 16px 16px;
+}
+/* Different heights for 1st, 2nd, 3rd */
+.step-1 .podium-base {
+  background: #ffae00;
+  height: 120px;
+}
+.step-2 .podium-base {
+  background: silver;
+  height: 90px;
+}
+.step-3 .podium-base {
+  background: #cd7f32;
+  height: 70px;
+}
+
+.end .home {
+  margin-top: 32px;
+  width: 100%;
 }

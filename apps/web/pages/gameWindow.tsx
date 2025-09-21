@@ -35,6 +35,7 @@ export default function GameWindow({ muted, toggleMute }: GameWindowProps) {
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => setIsClient(true), []);
+  // const forcedPhase = "round";
 
   const handleStartLobby = (name: string, isHost: boolean, code?: string) => {
     // Create a temporary playerId for optimistic UI
@@ -70,29 +71,31 @@ export default function GameWindow({ muted, toggleMute }: GameWindowProps) {
     );
   }
 
-  switch (phase) {
-    case "home":
-      return (
-        <Home
-          onStartLobby={handleStartLobby}
-          muted={muted}
-          toggleMute={toggleMute}
-        />
-      );
+  // switch (phase) {
+  //   case "home":
+  //     return (
+  //       <Home
+  //         onStartLobby={handleStartLobby}
+  //         muted={muted}
+  //         toggleMute={toggleMute}
+  //       />
+  //     );
 
-    case "lobby":
-      return <Lobby muted={muted} toggleMute={toggleMute} />;
+  //   case "lobby":
+  //     return <Lobby muted={muted} toggleMute={toggleMute} />;
 
-    case "round":
-      return <Round muted={muted} toggleMute={toggleMute} />;
+  //   case "round":
+  //     return <Round muted={muted} toggleMute={toggleMute} />;
 
-    case "leaderboard":
-      return <Leaderboard muted={muted} toggleMute={toggleMute} />;
+  //   case "leaderboard":
+  //     return <Leaderboard muted={muted} toggleMute={toggleMute} />;
 
-    case "end":
-      return <End muted={muted} toggleMute={toggleMute} />;
+  //   case "end":
+  //     return <End muted={muted} toggleMute={toggleMute} />;
 
-    default:
-      return null;
-  }
+  //   default:
+  //     return null;
+  // }
+
+  return <End muted={muted} toggleMute={toggleMute} />;
 }

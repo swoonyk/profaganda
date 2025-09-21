@@ -15,8 +15,12 @@ function LeaderboardItem({
     <li
       className={isYourself ? "leaderboard-item yourself" : "leaderboard-item"}
     >
-      {player.name}: {player.points}
-      {isYourself && <span className="yourself-label"> (You)</span>}
+      <p>
+        {player.name}:
+        {isYourself && <span className="yourself-label"> (You)</span>}
+      </p>
+
+      <p className="pts">{player.points}</p>
     </li>
   );
 }
@@ -27,26 +31,40 @@ type LeaderboardProps = {
 };
 
 export default function Leaderboard({ muted, toggleMute }: LeaderboardProps) {
-  const { players, roundNumber } = useGameState();
+  const { roundNumber } = useGameState();
   const { startRound } = useGameActions();
+
+  // Fake data for testing
+  const players = [
+    { name: "Alice", points: 120 },
+    { name: "Bob", points: 90 },
+    { name: "Charlie", points: 150 },
+    { name: "Esperanza", points: 110, yourself: true },
+  ];
 
   return (
     <div className="leaderboard">
       <MuteButton muted={muted} toggleMute={toggleMute} />
-      
-      <div className="header">
-        <h1>Leaderboard</h1>
-        <p>Question {roundNumber} out of 5</p>
-      </div>
 
-      <ul>
-        {players
-          .slice()
-          .sort((a, b) => b.points - a.points)
-          .map((p) => (
-            <LeaderboardItem key={p.name} player={p} isYourself={p.yourself} />
-          ))}
-      </ul>
+      <div className="top">
+        <div className="header">
+          <h1>Leaderboard</h1>
+          <p>Question {roundNumber} / 5</p>
+        </div>
+
+        <ul>
+          {players
+            .slice()
+            .sort((a, b) => b.points - a.points)
+            .map((p) => (
+              <LeaderboardItem
+                key={p.name}
+                player={p}
+                isYourself={p.yourself}
+              />
+            ))}
+        </ul>
+      </div>
 
       <Button onClick={() => startRound("A")} variant="primary">
         Next Round
