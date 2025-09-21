@@ -66,7 +66,7 @@ export default function Home({ onStartLobby, muted, toggleMute }: HomeProps) {
                     <path d="M5 12h14" />
                     <path d="M12 5v14" />
                   </svg>
-                  <span>Create Game</span>
+                  <span>Create game</span>
                 </Button>
                 <Button onClick={() => setView("join")} variant="secondary">
                   <svg
@@ -84,7 +84,7 @@ export default function Home({ onStartLobby, muted, toggleMute }: HomeProps) {
                     <circle cx="10" cy="8" r="5" />
                     <path d="M22 20c0-3.37-2-6.5-4-8a5 5 0 0 0-.45-8.3" />
                   </svg>
-                  <span>Join Game</span>
+                  <span>Join game</span>
                 </Button>
               </div>
             </div>
@@ -219,7 +219,7 @@ export default function Home({ onStartLobby, muted, toggleMute }: HomeProps) {
                     <path d="M15 12H3" />
                     <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
                   </svg>
-                  <span>Join Lobby</span>
+                  <span>Join lobby</span>
                 </Button>
                 <Button
                   onClick={() => {
