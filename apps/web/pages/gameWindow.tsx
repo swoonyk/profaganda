@@ -15,15 +15,30 @@ export interface Player {
 }
 
 export default function GameWindow() {
-  const { phase, players, roundNumber, options, partyId, connected } =
-    useGameState();
+  const {
+    phase,
+    players,
+    roundNumber,
+    options,
+    partyId,
+    connected,
+    setGameState,
+  } = useGameState();
+
   const { joinGame, startRound, submitAnswer, leaveGame } = useGameActions();
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => setIsClient(true), []);
 
   const handleStartLobby = (name: string, isHost: boolean, code?: string) => {
-    joinGame(name, isHost, code);
+    // Optimistic local update
+    setGameState((prev) => ({
+      ...prev,
+      phase: "lobby",
+      players: [{ name, points: 0, yourself: true, isHost }],
+    }));
+
+    joinGame(name, isHost, code); // emit to server
   };
 
   if (!isClient) {
