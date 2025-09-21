@@ -12,8 +12,8 @@ export default function Home({ onStartLobby }: HomeProps) {
   const [error, setError] = useState("");
 
   const handleCreate = () => {
-    if (!name.trim()) {
-      setError("Name cannot be blank.");
+    if (!name.trim() || name.trim().length > 13) {
+      setError("Name must be nonempty and less than 13 characters.");
       return;
     }
     setError("");
@@ -21,8 +21,8 @@ export default function Home({ onStartLobby }: HomeProps) {
   };
 
   const handleJoin = () => {
-    if (!name.trim()) {
-      setError("Name cannot be blank.");
+    if (!name.trim() || name.trim().length > 13) {
+      setError("Name must be nonempty and less than 13 characters.");
       return;
     }
     if (code.trim().length !== 6) {

@@ -1,30 +1,45 @@
 import { Button } from "components/ui/Button";
 import React from "react";
+import { Player } from "../GameWindow";
 
-export default function Lobby() {
+interface LobbyProps {
+  players: Player[];
+  maxPlayers?: number;
+  joinCode?: string;
+  onStart: () => void;
+  onBack: () => void;
+}
+
+export default function Lobby({
+  players,
+  maxPlayers = 4,
+  joinCode = "ABC123",
+  onStart,
+  onBack,
+}: LobbyProps) {
   return (
     <main className="lobby">
       <div className="panel left">
-        <h2>Players (2/4)</h2>
+        <h2>
+          Players ({players.length}/{maxPlayers})
+        </h2>
 
         <div className="player-list">
-          <div className="player yourself">
-            <p>clem</p>
+          {players.map((p) => (
+            <div
+              key={p.name}
+              className={`player ${p.yourself ? "yourself" : ""}`}
+            >
+              <p>{p.name}</p>
+              {p.yourself && <p>(you)</p>}
+            </div>
+          ))}
 
-            <p>(you)</p>
-          </div>
-
-          <div className="player">
-            <p>soonwoo</p>
-          </div>
-
-          <div className="player waiting">
-            <p>Waiting</p>
-          </div>
-
-          <div className="player waiting">
-            <p>Waiting</p>
-          </div>
+          {Array.from({ length: maxPlayers - players.length }).map((_, i) => (
+            <div key={i} className="player waiting">
+              <p>Waiting</p>
+            </div>
+          ))}
         </div>
       </div>
 
@@ -32,17 +47,29 @@ export default function Lobby() {
         <div className="top">
           <h2>Join code</h2>
 
-          <p>ABC123</p>
+          <p>{joinCode}</p>
         </div>
 
         <div className="buttons">
-          <Button variant="secondary" className="back">
+          <Button onClick={onBack} variant="secondary" className="back">
             Back
           </Button>
 
-          <Button>Start</Button>
+          <Button onClick={onStart}>Start</Button>
         </div>
       </div>
     </main>
+
+    /*
+<div>
+      <h2>Lobby</h2>
+      <ul>
+        {players.map((p) => (
+          <li key={p.name}>{p.name} {p.isHost ? "(Host)" : ""}</li>
+        ))}
+      </ul>
+      <button onClick={onStart}>Start Game</button>
+    </div>
+*/
   );
 }
