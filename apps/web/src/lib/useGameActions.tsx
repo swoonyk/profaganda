@@ -35,17 +35,30 @@ export function useGameActions() {
       let options: string[] = [];
 
       try {
+        // Get the API base URL - must be explicitly set for cross-domain API calls
+        const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL;
+        
+        if (!apiBaseUrl) {
+          throw new Error('NEXT_PUBLIC_API_URL environment variable is not set');
+        }
+
         if (mode === "A") {
           const response = await fetch(
-            `${process.env.NEXT_PUBLIC_API_URL || ''}/game/mode1/question`
+            `${apiBaseUrl}/game/mode1/question`
           );
+          if (!response.ok) {
+            throw new Error(`API request failed: ${response.status} ${response.statusText}`);
+          }
           gameData = await response.json();
           correctAnswer = gameData.correctProfessorId;
           options = gameData.professorOptions.map((p: any) => p._id);
         } else {
           const response = await fetch(
-            `${process.env.NEXT_PUBLIC_API_URL || ''}/game/mode2/question`
+            `${apiBaseUrl}/game/mode2/question`
           );
+          if (!response.ok) {
+            throw new Error(`API request failed: ${response.status} ${response.statusText}`);
+          }
           gameData = await response.json();
           correctAnswer = gameData.isRealReview; // true if real, false if AI
           options = ["real", "ai"];

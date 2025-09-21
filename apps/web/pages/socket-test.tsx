@@ -64,7 +64,16 @@ export default function SocketTest() {
 
   const fetchProfessors = async () => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/professors`);
+      const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL;
+      if (!apiBaseUrl) {
+        setEvents(e => [`fetch error: NEXT_PUBLIC_API_URL not set`, ...e].slice(0,50));
+        return;
+      }
+      const res = await fetch(`${apiBaseUrl}/professors`);
+      if (!res.ok) {
+        setEvents(e => [`fetch error: ${res.status} ${res.statusText}`, ...e].slice(0,50));
+        return;
+      }
       const json = await res.json();
       setEvents(e => [`/professors returned ${json.professors?.length ?? 0} items`, ...e].slice(0,50));
     } catch (err: any) {
