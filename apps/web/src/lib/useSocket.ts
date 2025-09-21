@@ -19,22 +19,47 @@ export function useSocket(): Socket | null {
     }
     
     if (!socket) {
+      // Determine if we should use secure connection based on URL or current page protocol
+      const isSecure = url.startsWith('https://') || url.startsWith('wss://') || 
+                      (typeof window !== 'undefined' && window.location.protocol === 'https:');
+      
       socket = io(url, {
         transports: ['websocket', 'polling'], // Try WebSocket first, fallback to polling
-        secure: false, // Set to true only if using HTTPS
+        secure: isSecure, // Auto-detect secure connection based on URL or page protocol
+        rejectUnauthorized: false, // Allow self-signed certificates
         reconnection: true,
         reconnectionAttempts: Infinity,
         reconnectionDelay: 1000,
         reconnectionDelayMax: 5000,
         timeout: 20000,
-        autoConnect: true
+        autoConnect: true,
+        withCredentials: false
       });
 
-      // Debug logging
+      // Enhanced debug logging
       socket.on('connect_error', (error) => {
         console.error('Socket connection error:', error);
-        console.log('Connection URL:', url);
-        console.log('Transport:', socket?.io.engine.transport.name);
+        console.log('Connection details:', {
+          url,
+          transport: socket?.io.engine.transport.name,
+          secure: isSecure,
+          protocol: typeof window !== 'undefined' ? window.location.protocol : 'unknown',
+          error: error.message
+        });
+
+        // Attempt reconnection with polling if WebSocket fails
+        if (socket?.io.engine.transport.name === 'websocket') {
+          console.log('Retrying with polling transport...');
+          socket.io.opts.transports = ['polling'];
+        }
+      });
+
+      socket.io.on('error', (error) => {
+        console.error('Transport error:', error);
+      });
+
+      socket.io.on('reconnect_attempt', (attempt) => {
+        console.log(`Reconnection attempt ${attempt}`);
       });
     }
     return socket;
@@ -60,6 +85,11 @@ export function useSocket(): Socket | null {
     return () => {
       client.off('connect', onConnect);
       client.off('disconnect', onDisconnect);
+      
+      // Cleanup on unmount
+      if (client.connected) {
+        client.disconnect();
+      }
     };
   }, [client]);
 

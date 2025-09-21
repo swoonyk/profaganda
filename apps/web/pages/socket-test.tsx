@@ -45,7 +45,13 @@ export default function SocketTest() {
   const startRoundAsHost = async () => {
     try {
       const { io } = await import('socket.io-client');
-      const host = io(process.env.NEXT_PUBLIC_SOCKET_SERVER_URL || 'http://localhost:4000', { transports: ['websocket'] });
+      const url = process.env.NEXT_PUBLIC_SOCKET_SERVER_URL || 'http://localhost:4000';
+      const isSecure = url.startsWith('https://') || url.startsWith('wss://') || 
+                      (typeof window !== 'undefined' && window.location.protocol === 'https:');
+      const host = io(url, { 
+        transports: ['websocket'],
+        secure: isSecure
+      });
       host.on('connect', () => {
         host.emit('connect_player', { playerId: 'host-next', partyId: 'party-1', isHost: true });
         host.emit('host:start_round', { roundId: 'r1', mode: 'B', correctAnswer: true, partyId: 'party-1' });

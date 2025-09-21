@@ -1,6 +1,7 @@
 // server.js
 const express = require('express');
-const http = require('http');
+const https = require('https');
+const fs = require('fs');
 const { Server } = require('socket.io');
 
 // Default socket server port set to 4000 to avoid conflict with Next.js dev (3000)
@@ -9,7 +10,10 @@ const PORT = process.env.PORT || 4000;
 const ROUND_DURATION_MS = Number(process.env.ROUND_DURATION_MS || 20000);
 
 const app = express();
-const server = http.createServer(app);
+const server = https.createServer({
+  key: fs.readFileSync('./certs/key.pem'),   // path to your private key
+  cert: fs.readFileSync('./certs/cert.pem')  // path to your certificate
+}, app);
 const io = new Server(server, {
   cors: { origin: '*' }
 });
