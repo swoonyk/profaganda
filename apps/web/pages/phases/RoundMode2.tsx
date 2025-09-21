@@ -14,7 +14,7 @@ type RoundMode2Props = {
 export default function RoundMode2({ muted, toggleMute, gameData }: RoundMode2Props) {
   const { players, roundNumber } = useGameState();
   const { submitAnswer } = useGameActions();
-  const [timeLeft, setTimeLeft] = useState(30);
+  const [timeLeft, setTimeLeft] = useState(15);
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
 
   useEffect(() => {
@@ -228,7 +228,7 @@ export default function RoundMode2({ muted, toggleMute, gameData }: RoundMode2Pr
       </div>
 
       {/* Results display (for after answer is submitted) */}
-      {selectedAnswer && (
+      {/* {selectedAnswer && (
         <div style={{ 
           textAlign: "center", 
           marginTop: "24px", 
@@ -238,7 +238,7 @@ export default function RoundMode2({ muted, toggleMute, gameData }: RoundMode2Pr
           borderRadius: "12px" 
         }}>
         </div>
-      )}
+      )} */}
     </div>
   );
 }
