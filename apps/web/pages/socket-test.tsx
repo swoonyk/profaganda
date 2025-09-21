@@ -64,20 +64,14 @@ export default function SocketTest() {
 
   const fetchProfessors = async () => {
     try {
-      const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL;
-      if (!apiBaseUrl) {
-        setEvents(e => [`fetch error: NEXT_PUBLIC_API_URL not set`, ...e].slice(0,50));
-        return;
-      }
-      // Remove trailing slash to prevent double slashes in URLs
-      const cleanApiBaseUrl = apiBaseUrl.replace(/\/$/, '');
-      const res = await fetch(`${cleanApiBaseUrl}/professors`);
+      // Use relative API path for same-origin requests
+      const res = await fetch('/api/game/mode1/question');
       if (!res.ok) {
         setEvents(e => [`fetch error: ${res.status} ${res.statusText}`, ...e].slice(0,50));
         return;
       }
       const json = await res.json();
-      setEvents(e => [`/professors returned ${json.professors?.length ?? 0} items`, ...e].slice(0,50));
+      setEvents(e => [`/api/game/mode1/question returned: ${JSON.stringify(json).substring(0, 100)}...`, ...e].slice(0,50));
     } catch (err: any) {
       setEvents(e => [`fetch error: ${err.message}`, ...e].slice(0,50));
     }
@@ -90,7 +84,7 @@ export default function SocketTest() {
       <div style={{ marginBottom: 8 }}>
         <button onClick={submitAI}>Submit AI Answer (round r1)</button>
         <button onClick={startRoundAsHost} style={{ marginLeft:8 }}>Start Round as Host</button>
-        <button onClick={fetchProfessors} style={{ marginLeft:8 }}>Fetch /professors</button>
+        <button onClick={fetchProfessors} style={{ marginLeft:8 }}>Test Game API</button>
       </div>
       <ul>
         {events.map((ev, i) => <li key={i}><code>{ev}</code></li>)}
