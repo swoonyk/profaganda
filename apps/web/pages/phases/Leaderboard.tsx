@@ -20,7 +20,12 @@ function LeaderboardItem({
   );
 }
 
-export default function Leaderboard() {
+type LeaderboardProps = {
+  muted: boolean;
+  toggleMute: () => void;
+};
+
+export default function Leaderboard({ muted, toggleMute }: LeaderboardProps) {
   const { players, roundNumber } = useGameState();
   const { startRound } = useGameActions();
 

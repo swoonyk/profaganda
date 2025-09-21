@@ -1,17 +1,14 @@
 import { Button } from "components/ui/Button";
 import React, { useState } from "react";
-
-interface HomeProps {
-  onStartLobby: (name: string, isHost: boolean, code?: string) => void;
-}
 import MuteButton from "components/MuteButton";
 
 type HomeProps = {
+  onStartLobby: (name: string, isHost: boolean, code?: string) => void;
   muted: boolean;
   toggleMute: () => void;
 };
 
-export default function Home({ muted, toggleMute }: HomeProps{ onStartLobby }: HomeProps) {
+export default function Home({ onStartLobby, muted, toggleMute }: HomeProps) {
   const [view, setView] = useState<"buttons" | "create" | "join">("buttons");
   const [name, setName] = useState("");
   const [code, setCode] = useState("");
@@ -39,9 +36,9 @@ export default function Home({ muted, toggleMute }: HomeProps{ onStartLobby }: H
     onStartLobby(name.trim(), false, code.trim()); // Notify parent to join lobby
   };
 
-  // 🔑 Always render mute button
   return (
     <>
+      {/* Always render mute button */}
       <MuteButton muted={muted} toggleMute={toggleMute} />
 
       {view === "buttons" && (
@@ -51,193 +48,83 @@ export default function Home({ muted, toggleMute }: HomeProps{ onStartLobby }: H
               <h1>Profaganda!</h1>
               <p>Race your friends to guess the right professor!</p>
             </div>
-            <div className="inner">
-              <div className="buttons">
-                <Button onClick={() => setView("create")}>
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="M5 12h14" /> <path d="M12 5v14" />
-                  </svg>
-                  <span>Create game</span>
-                </Button>
-                <Button onClick={() => setView("join")} variant="secondary">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="M18 21a8 8 0 0 0-16 0" />
-                    <circle cx="10" cy="8" r="5" />
-                    <path d="M22 20c0-3.37-2-6.5-4-8a5 5 0 0 0-.45-8.3" />
-                  </svg>
-                  <span>Join game</span>
-                </Button>
-              </div>
+            <div className="buttons">
+              <Button onClick={() => setView("create")}>Create Game</Button>
+              <Button onClick={() => setView("join")} variant="secondary">
+                Join Game
+              </Button>
             </div>
           </div>
         </main>
       )}
-      {view === "create" && (
-        <main>
-          <div className="panel yPadding create">
-            <h2>Create Game</h2>
-            <div className="inner">
-              <div className="input">
-                <input
-                  type="text"
-                  placeholder="Enter your name"
-                  autoFocus
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && handleCreate()}
-                />
-                {error && (
-                  <div className="error">
-                    <p>{error}</p>
-                  </div>
-                )}
-              </div>
 
-              <div className="buttons">
-                <Button onClick={handleCreate}>
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z" />
-                  </svg>
-                  <span>Start lobby</span>
-                </Button>
-                <Button
-                  onClick={() => {
-                    setView("buttons");
-                    setName("");
-                    setError("");
-                  }}
-                  variant="secondary"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="M13 9a1 1 0 0 1-1-1V5.061a1 1 0 0 0-1.811-.75l-6.835 6.836a1.207 1.207 0 0 0 0 1.707l6.835 6.835a1 1 0 0 0 1.811-.75V16a1 1 0 0 1 1-1h6a1 1 0 0 0 1-1v-4a1 1 0 0 0-1-1z" />
-                  </svg>
-                  <span>Back</span>
-                </Button>
-              </div>
+      {view === "create" && (
+        <main className="create">
+          <div className="panel yPadding">
+            <h2>Create Game</h2>
+            <input
+              type="text"
+              placeholder="Enter your name"
+              autoFocus
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleCreate()}
+            />
+            {error && <p className="error-text">{error}</p>}
+            <div className="buttons">
+              <Button onClick={handleCreate}>Start Lobby</Button>
+              <Button
+                onClick={() => {
+                  setView("buttons");
+                  setName("");
+                  setError("");
+                }}
+                variant="secondary"
+              >
+                Back
+              </Button>
             </div>
           </div>
         </main>
       )}
+
       {view === "join" && (
         <main className="join">
           <div className="panel yPadding">
-            <div className="inner">
-              <h2>Join Game</h2>
-              <div className="input">
-                <input
-                  type="text"
-                  placeholder="Enter your name"
-                  autoFocus
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  onKeyDown={(e) =>
-                    e.key === "Enter" &&
-                    name.trim() &&
-                    code.trim() &&
-                    handleJoin()
-                  }
-                />
-                <input
-                  type="text"
-                  placeholder="Enter game code"
-                  value={code}
-                  onChange={(e) => setCode(e.target.value)}
-                  onKeyDown={(e) =>
-                    e.key === "Enter" &&
-                    name.trim() &&
-                    code.trim() &&
-                    handleJoin()
-                  }
-                />
-                {error && (
-                  <div className="error">
-                    <p>{error}</p>
-                  </div>
-                )}
-              </div>
-              <div className="buttons">
-                <Button onClick={handleJoin}>
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="m10 17 5-5-5-5" /> <path d="M15 12H3" />
-                    <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
-                  </svg>
-                  <span>Join lobby</span>
-                </Button>
-                <Button
-                  onClick={() => {
-                    setView("buttons");
-                    setName("");
-                    setCode("");
-                    setError("");
-                  }}
-                  variant="secondary"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="M13 9a1 1 0 0 1-1-1V5.061a1 1 0 0 0-1.811-.75l-6.835 6.836a1.207 1.207 0 0 0 0 1.707l6.835 6.835a1 1 0 0 0 1.811-.75V16a1 1 0 0 1 1-1h6a1 1 0 0 0 1-1v-4a1 1 0 0 0-1-1z" />
-                  </svg>
-                  <span>Back</span>
-                </Button>
-              </div>
+            <h2>Join Game</h2>
+            <input
+              type="text"
+              placeholder="Enter your name"
+              autoFocus
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              onKeyDown={(e) =>
+                e.key === "Enter" && name.trim() && code.trim() && handleJoin()
+              }
+            />
+            <input
+              type="text"
+              placeholder="Enter game code"
+              value={code}
+              onChange={(e) => setCode(e.target.value)}
+              onKeyDown={(e) =>
+                e.key === "Enter" && name.trim() && code.trim() && handleJoin()
+              }
+            />
+            {error && <p className="error-text">{error}</p>}
+            <div className="buttons">
+              <Button onClick={handleJoin}>Join Lobby</Button>
+              <Button
+                onClick={() => {
+                  setView("buttons");
+                  setName("");
+                  setCode("");
+                  setError("");
+                }}
+                variant="secondary"
+              >
+                Back
+              </Button>
             </div>
           </div>
         </main>

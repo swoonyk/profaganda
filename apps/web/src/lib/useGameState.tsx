@@ -1,5 +1,4 @@
 import { useEffect, useState, useRef } from "react";
-import { Socket } from "socket.io-client";
 import { useSocket } from "./useSocket";
 
 export interface Player {
@@ -7,16 +6,12 @@ export interface Player {
   points: number;
   yourself?: boolean;
   isHost?: boolean;
+  playerId?: string;
 }
 
 export interface GameState {
   phase: "home" | "lobby" | "round" | "leaderboard" | "end";
-  players: Array<{
-    name: string;
-    points: number;
-    yourself?: boolean;
-    isHost?: boolean;
-  }>;
+  players: Player[];
   roundNumber: number;
   options?: string[];
   roundId?: string;
@@ -39,13 +34,12 @@ export function useGameState() {
     if (!socket) return;
 
     // Connection events
-    socket.on("connect", () => {
-      setGameState((prev) => ({ ...prev, connected: true }));
-    });
-
-    socket.on("disconnect", () => {
-      setGameState((prev) => ({ ...prev, connected: false }));
-    });
+    socket.on("connect", () =>
+      setGameState((prev) => ({ ...prev, connected: true }))
+    );
+    socket.on("disconnect", () =>
+      setGameState((prev) => ({ ...prev, connected: false }))
+    );
 
     socket.on("connected", ({ playerId, partyId }) => {
       playerIdRef.current = playerId;
@@ -57,12 +51,12 @@ export function useGameState() {
     });
 
     socket.on("server:players_update", ({ players }) => {
-      const updatedPlayers = players.map((player: any) => ({
-        ...player,
-        yourself:
-          player.name === playerIdRef.current ||
-          player.playerId === playerIdRef.current,
-      }));
+      const updatedPlayers = players.map((player: any) => {
+        // Keep "yourself" for optimistic local player until server confirms
+        const isYou =
+          player.playerId === playerIdRef.current || player.yourself;
+        return { ...player, yourself: isYou };
+      });
 
       setGameState((prev) => ({ ...prev, players: updatedPlayers }));
     });
@@ -71,7 +65,7 @@ export function useGameState() {
       setGameState((prev) => ({ ...prev, phase }));
     });
 
-    socket.on("server:round_started", ({ roundId, mode, options }) => {
+    socket.on("server:round_started", ({ roundId, options }) => {
       setGameState((prev) => ({
         ...prev,
         phase: "round",
@@ -83,7 +77,7 @@ export function useGameState() {
     socket.on("server:round_results", ({ players, roundNumber }) => {
       const updatedPlayers = players.map((player: any) => ({
         ...player,
-        yourself: player.name === playerIdRef.current,
+        yourself: player.playerId === playerIdRef.current,
       }));
 
       setGameState((prev) => ({

@@ -2,7 +2,12 @@ import React from "react";
 import { useGameState } from "@/lib/useGameState";
 import { useGameActions } from "@/lib/useGameActions";
 
-export default function End() {
+type EndProps = {
+  muted: boolean;
+  toggleMute: () => void;
+};
+
+export default function End({ muted, toggleMute }: EndProps) {
   const { players } = useGameState();
   const { leaveGame } = useGameActions();
 

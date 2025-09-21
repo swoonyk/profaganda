@@ -37,14 +37,19 @@ export default function GameWindow({ muted, toggleMute }: GameWindowProps) {
   useEffect(() => setIsClient(true), []);
 
   const handleStartLobby = (name: string, isHost: boolean, code?: string) => {
+    // Create a temporary playerId for optimistic UI
+    const tempPlayerId = "temp_" + Math.random().toString(36).substr(2, 9);
+
     // Optimistic UI: show yourself immediately
     setGameState((prev) => ({
       ...prev,
       phase: "lobby",
-      players: [{ name, points: 0, yourself: true, isHost }],
+      players: [
+        { name, points: 0, yourself: true, isHost, playerId: tempPlayerId },
+      ],
     }));
 
-    // Tell the server
+    // Tell the server to join/create game
     joinGame(name, isHost, code);
   };
 
