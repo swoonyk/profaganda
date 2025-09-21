@@ -1,19 +1,39 @@
 // server.js
 const express = require('express');
 const https = require('https');
+const http = require('http');
 const fs = require('fs');
 const { Server } = require('socket.io');
 
-// Default socket server port set to 443 to avoid conflict with Next.js dev (3000)
-const PORT = process.env.PORT || 443;
+// Default socket server port - Render provides PORT environment variable
+const PORT = process.env.PORT || 10000;
 // Auto-end timer per round (ms). Set to 0 to disable.
 const ROUND_DURATION_MS = Number(process.env.ROUND_DURATION_MS || 20000);
 
 const app = express();
-const server = https.createServer({
-  key: fs.readFileSync('/etc/letsencrypt/live/profaganda.hodgman.net/privkey.pem'),
-  cert: fs.readFileSync('/etc/letsencrypt/live/profaganda.hodgman.net/fullchain.pem')
-}, app);
+
+// Create server based on environment
+let server;
+if (process.env.NODE_ENV === 'production') {
+  // For cloud deployment (Render, etc.), use HTTP - SSL is handled by the platform
+  server = http.createServer(app);
+} else {
+  // For local development, try to use HTTPS if certificates exist
+  try {
+    if (fs.existsSync('/etc/letsencrypt/live/profaganda.hodgman.net/privkey.pem')) {
+      server = https.createServer({
+        key: fs.readFileSync('/etc/letsencrypt/live/socket.hodgman.net/privkey.pem'),
+        cert: fs.readFileSync('/etc/letsencrypt/live/socket.hodgman.net/fullchain.pem')
+      }, app);
+    } else {
+      console.log('SSL certificates not found, falling back to HTTP');
+      server = http.createServer(app);
+    }
+  } catch (error) {
+    console.log('Error loading SSL certificates, falling back to HTTP:', error.message);
+    server = http.createServer(app);
+  }
+}
 const io = new Server(server, {
   cors: { origin: '*' }
 });
@@ -248,5 +268,6 @@ io.on('connection', (socket) => {
 });
 
 server.listen(PORT, () => {
-  console.log(`Profaganda socket server listening on :${PORT}`);
+  const protocol = process.env.NODE_ENV === 'production' ? 'HTTP' : (server instanceof https.Server ? 'HTTPS' : 'HTTP');
+  console.log(`Profaganda socket server listening on ${protocol} port ${PORT}`);
 });

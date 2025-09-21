@@ -1,12 +1,12 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { useSocket } from "./useSocket";
 
 export interface Player {
+  playerId: string;
   name: string;
   points: number;
   yourself?: boolean;
   isHost?: boolean;
-  playerId?: string;
 }
 
 export interface GameState {
@@ -22,7 +22,6 @@ export interface GameState {
 
 export function useGameState() {
   const socket = useSocket();
-  const playerIdRef = useRef<string | null>(null);
   const [gameState, setGameState] = useState<GameState>({
     phase: "home",
     players: [],
@@ -33,7 +32,7 @@ export function useGameState() {
   useEffect(() => {
     if (!socket) return;
 
-    // Connection events
+    // Connection
     socket.on("connect", () =>
       setGameState((prev) => ({ ...prev, connected: true }))
     );
@@ -41,62 +40,53 @@ export function useGameState() {
       setGameState((prev) => ({ ...prev, connected: false }))
     );
 
-    socket.on("connected", ({ playerId, partyId }) => {
-      playerIdRef.current = playerId;
-      setGameState((prev) => ({
-        ...prev,
-        playerId,
-        partyId,
-      }));
-    });
-
-    socket.on("server:players_update", ({ players }) => {
-      const updatedPlayers = players.map((player: any) => {
-        // Keep "yourself" for optimistic local player until server confirms
-        const isYou =
-          player.playerId === playerIdRef.current || player.yourself;
-        return { ...player, yourself: isYou };
-      });
-
-      setGameState((prev) => ({ ...prev, players: updatedPlayers }));
-    });
-
-    socket.on("server:phase_change", ({ phase }) => {
-      setGameState((prev) => ({ ...prev, phase }));
-    });
-
-    socket.on("server:round_started", ({ roundId, options }) => {
-      setGameState((prev) => ({
-        ...prev,
-        phase: "round",
-        roundId,
-        options,
-      }));
-    });
-
-    socket.on("server:round_results", ({ players, roundNumber }) => {
-      const updatedPlayers = players.map((player: any) => ({
-        ...player,
-        yourself: player.playerId === playerIdRef.current,
-      }));
-
-      setGameState((prev) => ({
-        ...prev,
-        phase: "leaderboard",
-        players: updatedPlayers,
-        roundNumber,
-      }));
-    });
-
-    socket.on("server:answer_ack", ({ roundId, accepted, correct, points }) => {
-      if (accepted) {
-        console.log(
-          `Answer submitted successfully for round ${roundId}. Correct: ${correct}, Points: ${points}`
-        );
-      } else {
-        console.log(`Answer rejected for round ${roundId}`);
+    // Server assigns player ID and party ID
+    socket.on(
+      "connected",
+      ({ playerId, partyId }: { playerId: string; partyId: string }) => {
+        setGameState((prev) => ({ ...prev, playerId, partyId }));
       }
+    );
+
+    // Update player list from server
+    socket.on("server:players_update", ({ players }: { players: Player[] }) => {
+      setGameState((prev) => ({
+        ...prev,
+        players: players.map((p) => ({
+          ...p,
+          yourself: p.playerId === prev.playerId,
+        })),
+      }));
     });
+
+    // Phase changes
+    socket.on(
+      "server:phase_change",
+      ({ phase }: { phase: GameState["phase"] }) =>
+        setGameState((prev) => ({ ...prev, phase }))
+    );
+
+    // Round started
+    socket.on(
+      "server:round_started",
+      ({ roundId, options }: { roundId: string; options: string[] }) =>
+        setGameState((prev) => ({ ...prev, phase: "round", roundId, options }))
+    );
+
+    // Round results
+    socket.on(
+      "server:round_results",
+      ({ players, roundNumber }: { players: Player[]; roundNumber: number }) =>
+        setGameState((prev) => ({
+          ...prev,
+          phase: "leaderboard",
+          players: players.map((p) => ({
+            ...p,
+            yourself: p.playerId === prev.playerId,
+          })),
+          roundNumber,
+        }))
+    );
 
     return () => {
       socket.off("connect");
@@ -106,7 +96,6 @@ export function useGameState() {
       socket.off("server:phase_change");
       socket.off("server:round_started");
       socket.off("server:round_results");
-      socket.off("server:answer_ack");
     };
   }, [socket]);
 
