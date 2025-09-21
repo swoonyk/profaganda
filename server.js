@@ -140,8 +140,8 @@ io.on('connection', (socket) => {
   });
 
   // Host starts a round
-  // Payload: { roundId, mode: 'A'|'B', correctAnswer: string|boolean, options?: string[], partyId? }
-  socket.on('host:start_round', ({ roundId, mode, correctAnswer, options = [], partyId }) => {
+  // Payload: { roundId, mode: 'A'|'B', correctAnswer: string|boolean, options?: string[], partyId?, gameData? }
+  socket.on('host:start_round', ({ roundId, mode, correctAnswer, options = [], partyId, gameData }) => {
     try {
       if (!socket.data.isHost) return;
       const pId = partyId || socket.data.partyId;
@@ -171,7 +171,8 @@ io.on('connection', (socket) => {
       io.to(`party:${pId}`).emit('server:round_started', {
         roundId,
         mode,
-        options
+        options,
+        gameData
       });
 
       console.log(`Round ${roundId} started in party ${pId} (mode ${mode})`);
