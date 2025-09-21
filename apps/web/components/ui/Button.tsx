@@ -1,6 +1,6 @@
 import React, { ButtonHTMLAttributes, ReactNode } from "react";
 
-type ButtonVariant = "primary" | "secondary";
+type ButtonVariant = "primary" | "secondary" | "tertiary";
 
 type ButtonProps = {
   children: ReactNode;
@@ -10,7 +10,7 @@ type ButtonProps = {
 
 const baseStyle: React.CSSProperties = {
   padding: "0.5rem 2rem",
-  borderRadius: "0.375rem",
+  borderRadius: "12px",
   fontWeight: 500,
   cursor: "pointer",
   transition: "120ms ease-out",
@@ -28,6 +28,10 @@ const activeStyles: Record<ButtonVariant, React.CSSProperties> = {
     boxShadow: "0 2px 0 #A6A6A6",
     transform: "translateY(4px)",
   },
+  tertiary: {
+    boxShadow: "0 2px 0 #082E53",
+    transform: "translateY(4px)",
+  },
 };
 
 const variantStyles: Record<ButtonVariant, React.CSSProperties> = {
@@ -41,6 +45,11 @@ const variantStyles: Record<ButtonVariant, React.CSSProperties> = {
     color: "#000000",
     boxShadow: "0 6px 0 #A6A6A6",
   },
+  tertiary: {
+    backgroundColor: "#2B5D8E",
+    color: "#ffffff",
+    boxShadow: "0 6px 0 #082E53",
+  },
 };
 const hoverStyles: Record<ButtonVariant, React.CSSProperties> = {
   primary: {
@@ -48,6 +57,9 @@ const hoverStyles: Record<ButtonVariant, React.CSSProperties> = {
   },
   secondary: {
     backgroundColor: "#cfd1d6ff",
+  },
+  tertiary: {
+    backgroundColor: "#1f4c79ff",
   },
 };
 

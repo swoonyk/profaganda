@@ -17,6 +17,24 @@ export default function Lobby({
   onStart,
   onBack,
 }: LobbyProps) {
+import React, { useState } from "react";
+
+export default function Lobby() {
+  const joinCode = "ABC123";
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = () => {
+    navigator.clipboard
+      .writeText(joinCode)
+      .then(() => {
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000); // reset after 2s
+      })
+      .catch(() => {
+        alert("Failed to copy code");
+      });
+  };
+
   return (
     <main className="lobby">
       <div className="panel left">
@@ -40,6 +58,22 @@ export default function Lobby({
               <p>Waiting</p>
             </div>
           ))}
+          <div className="player yourself">
+            <p>clem</p>
+            <p>(you)</p>
+          </div>
+
+          <div className="player">
+            <p>soonwoo</p>
+          </div>
+
+          <div className="player waiting">
+            <p>Waiting</p>
+          </div>
+
+          <div className="player waiting">
+            <p>Waiting</p>
+          </div>
         </div>
       </div>
 
@@ -48,6 +82,16 @@ export default function Lobby({
           <h2>Join code</h2>
 
           <p>{joinCode}</p>
+          <div className="code-wrapper">
+            <p className="code">{joinCode}</p>
+            <Button
+              variant="tertiary"
+              onClick={handleCopy}
+              className="copy-btn"
+            >
+              {copied ? "Copied!" : "Copy"}
+            </Button>
+          </div>
         </div>
 
         <div className="buttons">
