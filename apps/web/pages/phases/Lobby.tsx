@@ -1,23 +1,48 @@
-// phases/Lobby.tsx
-// This one should take game code and display it
+import { Button } from "components/ui/Button";
+import React from "react";
 
-import { Player } from "pages/GameWindow";
-
-interface LobbyProps {
-  players: Player[];
-  onStart: () => void;
-}
-
-export default function Lobby({ players, onStart }: LobbyProps) {
+export default function Lobby() {
   return (
-    <div>
-      <h2>Lobby</h2>
-      <ul>
-        {players.map((p) => (
-          <li key={p.name}>{p.name}</li>
-        ))}
-      </ul>
-      <button onClick={onStart}>Start Round</button>
-    </div>
+    <main className="lobby">
+      <div className="panel left">
+        <h2>Players (2/4)</h2>
+
+        <div className="player-list">
+          <div className="player yourself">
+            <p>clem</p>
+
+            <p>(you)</p>
+          </div>
+
+          <div className="player">
+            <p>soonwoo</p>
+          </div>
+
+          <div className="player waiting">
+            <p>Waiting</p>
+          </div>
+
+          <div className="player waiting">
+            <p>Waiting</p>
+          </div>
+        </div>
+      </div>
+
+      <div className="panel right">
+        <div className="top">
+          <h2>Join code</h2>
+
+          <p>ABC123</p>
+        </div>
+
+        <div className="buttons">
+          <Button variant="secondary" className="back">
+            Back
+          </Button>
+
+          <Button>Start</Button>
+        </div>
+      </div>
+    </main>
   );
 }

@@ -9,7 +9,7 @@ type ButtonProps = {
 } & ButtonHTMLAttributes<HTMLButtonElement>;
 
 const baseStyle: React.CSSProperties = {
-  padding: "0.5rem 1.25rem",
+  padding: "0.5rem 2rem",
   borderRadius: "0.375rem",
   fontWeight: 500,
   cursor: "pointer",

@@ -37,12 +37,14 @@ export default function Home({ onStartLobby }: HomeProps) {
   if (view === "buttons") {
     return (
       <main>
-        <h1>Profaganda!</h1>
-        <p>Race your friends to guess the right professor!</p>
-        <Button onClick={() => setView("create")}>Create Game</Button>
-        <Button onClick={() => setView("join")} variant="secondary">
-          Join Game
-        </Button>
+        <div className="panel">
+          <h1>Profaganda!</h1>
+          <p>Race your friends to guess the right professor!</p>
+          <Button onClick={() => setView("create")}>Create Game</Button>
+          <Button onClick={() => setView("join")} variant="secondary">
+            Join Game
+          </Button>
+        </div>
       </main>
     );
   }
@@ -121,7 +123,7 @@ export default function Home({ onStartLobby }: HomeProps) {
             Join Lobby
           </Button>
         </div>
-        {error && <p style={{ color: "red" }}>{error}</p>}
+        {error && <p className="error-text">{error}</p>}
       </div>
     );
   }

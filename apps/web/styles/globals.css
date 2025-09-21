@@ -26,9 +26,13 @@ body {
   background-size: cover;
 }
 
-main {
+h2 {
+  font-size: 32px;
+}
+
+.panel {
   border-radius: 16px;
-  padding: 64px;
+  padding: 32px;
   background: rgba(255 255 255 / 10%);
   border: 6px solid rgba(255 255 255 / 15%);
   display: flex;
@@ -36,6 +40,7 @@ main {
   justify-content: center;
   gap: 24px;
   align-items: center;
+  width: 800px;
 }
 
 main h1 {
@@ -53,6 +58,7 @@ main p {
 .buttons {
   display: flex;
   gap: 24px;
+  width: 100%;
 }
 
 .leaderboard {
@@ -116,20 +122,20 @@ input:hover {
 }
 
 input:focus {
-  outline: none;
-  border-color: #fff;
+  outline: 4px solid #fff;
+  outline-offset: -4px;
 }
 
-.start .buttons {
+.buttons {
   display: flex;
   gap: 24px;
 }
 
-.start .buttons button.back {
+.buttons button.back {
   width: fit-content !important;
 }
 
-.start .buttons button:last-child {
+.buttons button:last-child {
   width: 100% !important;
 }
 
@@ -159,4 +165,52 @@ button:disabled {
 
 .error-text {
   color: #ff5d5d;
+}
+
+.lobby {
+  display: flex;
+  flex-direction: row;
+  gap: 16px;
+}
+
+.lobby .left {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 400px;
+  align-items: flex-start;
+}
+
+.lobby .right {
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.lobby .player {
+  padding: 16px;
+  border-radius: 8px;
+  display: flex;
+  gap: 8px;
+  width: 100%;
+  background: rgba(0 0 0 / 20%);
+}
+
+.lobby .yourself {
+  background: #fff;
+}
+
+.lobby .waiting p {
+  font-style: italic;
+  opacity: 50%;
+}
+
+.lobby .yourself p {
+  color: #000;
+}
+
+.lobby .player-list {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  gap: 12px;
 }
