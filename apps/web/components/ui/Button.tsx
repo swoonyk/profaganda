@@ -10,12 +10,10 @@ type ButtonProps = {
 
 const baseStyle: React.CSSProperties = {
   padding: "0.5rem 1.25rem",
-  border: "none",
   borderRadius: "0.375rem",
   fontWeight: 500,
   cursor: "pointer",
   transition: "120ms ease-out",
-  outline: "none",
   display: "inline-block",
   height: "61px",
   width: "300px",
@@ -73,7 +71,7 @@ export const Button: React.FC<ButtonProps> = ({
   return (
     <button
       style={style}
-      className={className}
+      className={`${variant} ${className ?? ""}`.trim()}
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => {
         setHover(false);

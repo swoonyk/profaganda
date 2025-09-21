@@ -15,13 +15,15 @@ html {
 body {
   font-family: "Roboto", sans-serif;
   color: #fff;
-  background: navy;
+  /* background: navy; */
   line-height: 1.6;
   width: 100%;
   height: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
+  background: url("/bg.png");
+  background-size: cover;
 }
 
 main {
@@ -134,4 +136,27 @@ input:focus {
 .start h2 {
   font-size: 48px;
   text-align: center;
+}
+
+button {
+  border: none;
+}
+
+button:focus-visible {
+  outline: 4px solid #0ad6a1;
+  outline-offset: 4px;
+}
+
+button.secondary:focus-visible {
+  outline: 4px solid #fff;
+  outline-offset: 4px;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.error-text {
+  color: #ff5d5d;
 }

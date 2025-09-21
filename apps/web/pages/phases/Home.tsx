@@ -76,7 +76,7 @@ export default function Home({ onStartLobby }: HomeProps) {
           <Button onClick={handleCreate}>Start Lobby</Button>
         </div>
 
-        {error && <p style={{ color: "red" }}>{error}</p>}
+        {error && <p className="error-text">{error}</p>}
       </div>
     );
   }
