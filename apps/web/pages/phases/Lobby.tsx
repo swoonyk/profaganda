@@ -51,7 +51,7 @@ export default function Lobby({
         </div>
 
         <div className="buttons">
-          <Button variant="secondary" className="back">
+          <Button variant="secondary" className="back" onClick={onBack}>
             Back
           </Button>
 
@@ -59,17 +59,5 @@ export default function Lobby({
         </div>
       </div>
     </main>
-
-    /*
-<div>
-      <h2>Lobby</h2>
-      <ul>
-        {players.map((p) => (
-          <li key={p.name}>{p.name} {p.isHost ? "(Host)" : ""}</li>
-        ))}
-      </ul>
-      <button onClick={onStart}>Start Game</button>
-    </div>
-*/
   );
 }
