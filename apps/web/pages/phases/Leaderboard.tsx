@@ -1,13 +1,15 @@
 import React from "react";
 import { Button } from "components/ui/Button";
-import { Player } from "pages/gameWindow";
+import { useGameState } from "@/lib/useGameState";
+import { useGameActions } from "@/lib/useGameActions";
 
-interface LeaderboardItemProps {
-  player: Player;
+function LeaderboardItem({
+  player,
+  isYourself,
+}: {
+  player: any;
   isYourself?: boolean;
-}
-
-function LeaderboardItem({ player, isYourself }: LeaderboardItemProps) {
+}) {
   return (
     <li
       className={isYourself ? "leaderboard-item yourself" : "leaderboard-item"}
@@ -18,39 +20,27 @@ function LeaderboardItem({ player, isYourself }: LeaderboardItemProps) {
   );
 }
 
-interface LeaderboardProps {
-  players: Player[];
-  onNext: () => void;
-  yourselfName?: string;
-  roundNumber: number;
-}
+export default function Leaderboard() {
+  const { players, roundNumber } = useGameState();
+  const { startRound } = useGameActions();
 
-export default function Leaderboard({
-  players,
-  onNext,
-  yourselfName,
-  roundNumber,
-}: LeaderboardProps) {
   return (
     <div className="leaderboard">
       <div className="header">
         <h1>Leaderboard</h1>
         <p>Question {roundNumber} out of 5</p>
       </div>
+
       <ul>
         {players
           .slice()
           .sort((a, b) => b.points - a.points)
           .map((p) => (
-            <LeaderboardItem
-              key={p.name}
-              player={p}
-              isYourself={yourselfName === p.name}
-            />
+            <LeaderboardItem key={p.name} player={p} isYourself={p.yourself} />
           ))}
       </ul>
 
-      <Button onClick={onNext} variant="primary">
+      <Button onClick={() => startRound("A")} variant="primary">
         Next Round
       </Button>
     </div>

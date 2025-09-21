@@ -15,35 +15,28 @@ export interface Player {
 }
 
 export default function GameWindow() {
-  const { phase, players, roundNumber, options, partyId, connected, roundId } = useGameState();
+  const { phase, players, roundNumber, options, partyId, connected } =
+    useGameState();
   const { joinGame, startRound, submitAnswer, leaveGame } = useGameActions();
   const [isClient, setIsClient] = useState(false);
 
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
+  useEffect(() => setIsClient(true), []);
 
   const handleStartLobby = (name: string, isHost: boolean, code?: string) => {
     joinGame(name, isHost, code);
   };
 
-  const handleNextRound = () => {
-    startRound();
-  };
-
-  // Show loading until client-side is ready
   if (!isClient) {
     return (
-      <div style={{ padding: '20px', textAlign: 'center' }}>
+      <div style={{ padding: 20, textAlign: "center" }}>
         <h2>Loading...</h2>
       </div>
     );
   }
 
-  // Show connection status if not connected
   if (!connected) {
     return (
-      <div style={{ padding: '20px', textAlign: 'center' }}>
+      <div style={{ padding: 20, textAlign: "center" }}>
         <h2>Connecting to server...</h2>
         <p>Make sure the socket server is running on port 4000</p>
       </div>
@@ -52,40 +45,19 @@ export default function GameWindow() {
 
   switch (phase) {
     case "home":
-      return <Home onStartLobby={handleStartLobby} />;
+      return <Home />;
 
     case "lobby":
-      return (
-        <Lobby
-          players={players}
-          maxPlayers={4} // default or from server
-          joinCode={partyId || "ABC123"}
-          onStart={handleNextRound} // host starts first round
-          onBack={leaveGame} // back to home
-        />
-      );
+      return <Lobby />;
 
     case "round":
-      return (
-        <Round
-          roundNumber={roundNumber}
-          options={options || []}
-          onSubmitAnswer={submitAnswer}
-        />
-      );
+      return <Round />;
 
     case "leaderboard":
-      return (
-        <Leaderboard
-          players={players}
-          roundNumber={roundNumber}
-          // host can trigger next round if you want
-          onNext={handleNextRound}
-        />
-      );
+      return <Leaderboard />;
 
     case "end":
-      return <End players={players} />;
+      return <End />;
 
     default:
       return null;

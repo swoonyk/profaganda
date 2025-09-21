@@ -1,11 +1,9 @@
 import { Button } from "components/ui/Button";
 import React, { useState } from "react";
+import { useGameActions } from "@/lib/useGameActions";
 
-interface HomeProps {
-  onStartLobby: (name: string, isHost: boolean, code?: string) => void;
-}
-
-export default function Home({ onStartLobby }: HomeProps) {
+export default function Home() {
+  const { joinGame } = useGameActions();
   const [view, setView] = useState<"buttons" | "create" | "join">("buttons");
   const [name, setName] = useState("");
   const [code, setCode] = useState("");
@@ -17,7 +15,7 @@ export default function Home({ onStartLobby }: HomeProps) {
       return;
     }
     setError("");
-    onStartLobby(name.trim(), true);
+    joinGame(name.trim(), true);
   };
 
   const handleJoin = () => {
@@ -30,10 +28,9 @@ export default function Home({ onStartLobby }: HomeProps) {
       return;
     }
     setError("");
-    onStartLobby(name.trim(), false, code.trim());
+    joinGame(name.trim(), false, code.trim());
   };
 
-  // render the splash buttons
   if (view === "buttons") {
     return (
       <main className="start">
@@ -42,7 +39,6 @@ export default function Home({ onStartLobby }: HomeProps) {
             <h1>Profaganda!</h1>
             <p>Race your friends to guess the right professor!</p>
           </div>
-
           <div className="inner">
             <div className="buttons">
               <Button onClick={() => setView("create")}>Create Game</Button>
@@ -56,99 +52,77 @@ export default function Home({ onStartLobby }: HomeProps) {
     );
   }
 
-  // render the create form
   if (view === "create") {
     return (
       <main>
         <div className="panel yPadding">
-          <div className="inner">
-            <h2>Create Game</h2>
-            <input
-              type="text"
-              placeholder="Enter your name"
-              autoFocus
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && name.trim()) {
-                  handleCreate();
-                }
+          <h2>Create Game</h2>
+          <input
+            type="text"
+            placeholder="Enter your name"
+            autoFocus
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleCreate()}
+          />
+          <div className="buttons">
+            <Button onClick={handleCreate}>Start Lobby</Button>
+            <Button
+              onClick={() => {
+                setView("buttons");
+                setName("");
+                setError("");
               }}
-            />
-
-            <div className="buttons">
-              <Button onClick={handleCreate}>Start Lobby</Button>
-
-              <Button
-                onClick={() => {
-                  setView("buttons");
-                  setError("");
-                  setName("");
-                }}
-                variant="secondary"
-                className="back"
-              >
-                Back
-              </Button>
-            </div>
-
-            {error && <p className="error-text">{error}</p>}
+              variant="secondary"
+            >
+              Back
+            </Button>
           </div>
+          {error && <p className="error-text">{error}</p>}
         </div>
       </main>
     );
   }
 
-  // render the join form
   if (view === "join") {
     return (
       <main>
         <div className="panel yPadding">
-          <div className="inner">
-            <h2>Join Game</h2>
-            <input
-              type="text"
-              placeholder="Enter your name"
-              autoFocus
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && name.trim() && code.trim()) {
-                  handleJoin();
-                }
+          <h2>Join Game</h2>
+          <input
+            type="text"
+            placeholder="Enter your name"
+            autoFocus
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            onKeyDown={(e) =>
+              e.key === "Enter" && name.trim() && code.trim() && handleJoin()
+            }
+          />
+          <input
+            type="text"
+            placeholder="Enter game code"
+            value={code}
+            onChange={(e) => setCode(e.target.value)}
+            onKeyDown={(e) =>
+              e.key === "Enter" && name.trim() && code.trim() && handleJoin()
+            }
+          />
+          <div className="buttons">
+            <Button onClick={handleJoin}>Join Lobby</Button>
+            <Button
+              onClick={() => {
+                setView("buttons");
+                setName("");
+                setCode("");
+                setError("");
               }}
-            />
-            <input
-              type="text"
-              placeholder="Enter game code"
-              value={code}
-              onChange={(e) => setCode(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && name.trim() && code.trim()) {
-                  handleJoin();
-                }
-              }}
-            />
-
-            <div className="buttons">
-              <Button onClick={handleJoin}>Join Lobby</Button>
-
-              <Button
-                onClick={() => {
-                  setView("buttons");
-                  setError("");
-                  setName("");
-                  setCode("");
-                }}
-                variant="secondary"
-                className="back"
-              >
-                Back
-              </Button>
-            </div>
-
-            {error && <p className="error-text">{error}</p>}
+              variant="secondary"
+            >
+              Back
+            </Button>
           </div>
+          {error && <p className="error-text">{error}</p>}
         </div>
       </main>
     );
