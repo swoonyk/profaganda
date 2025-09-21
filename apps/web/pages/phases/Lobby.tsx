@@ -1,6 +1,6 @@
 import { Button } from "components/ui/Button";
 import React, { useState } from "react";
-import { Player } from "../GameWindow";
+import { Player } from "../gameWindow";
 
 interface LobbyProps {
   players: Player[];

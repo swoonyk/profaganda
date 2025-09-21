@@ -1,6 +1,6 @@
 import React from "react";
 import { Button } from "components/ui/Button";
-import { Player } from "pages/GameWindow";
+import { Player } from "pages/gameWindow";
 
 interface LeaderboardItemProps {
   player: Player;
