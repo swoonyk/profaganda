@@ -42,9 +42,12 @@ export function useGameActions() {
           throw new Error('NEXT_PUBLIC_API_URL environment variable is not set');
         }
 
+        // Remove trailing slash to prevent double slashes in URLs
+        const cleanApiBaseUrl = apiBaseUrl.replace(/\/$/, '');
+
         if (mode === "A") {
           const response = await fetch(
-            `${apiBaseUrl}/game/mode1/question`
+            `${cleanApiBaseUrl}/game/mode1/question`
           );
           if (!response.ok) {
             throw new Error(`API request failed: ${response.status} ${response.statusText}`);
@@ -54,7 +57,7 @@ export function useGameActions() {
           options = gameData.professorOptions.map((p: any) => p._id);
         } else {
           const response = await fetch(
-            `${apiBaseUrl}/game/mode2/question`
+            `${cleanApiBaseUrl}/game/mode2/question`
           );
           if (!response.ok) {
             throw new Error(`API request failed: ${response.status} ${response.statusText}`);

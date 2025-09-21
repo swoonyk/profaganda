@@ -69,7 +69,9 @@ export default function SocketTest() {
         setEvents(e => [`fetch error: NEXT_PUBLIC_API_URL not set`, ...e].slice(0,50));
         return;
       }
-      const res = await fetch(`${apiBaseUrl}/professors`);
+      // Remove trailing slash to prevent double slashes in URLs
+      const cleanApiBaseUrl = apiBaseUrl.replace(/\/$/, '');
+      const res = await fetch(`${cleanApiBaseUrl}/professors`);
       if (!res.ok) {
         setEvents(e => [`fetch error: ${res.status} ${res.statusText}`, ...e].slice(0,50));
         return;
