@@ -2,8 +2,14 @@ import { Button } from "components/ui/Button";
 import React, { useState } from "react";
 import { useGameState } from "@/lib/useGameState";
 import { useGameActions } from "@/lib/useGameActions";
+import MuteButton from "components/MuteButton";
 
-export default function Lobby() {
+type LobbyProps = {
+  muted: boolean;
+  toggleMute: () => void;
+};
+
+export default function Lobby({ muted, toggleMute }: LobbyProps) {
   const { players, partyId } = useGameState();
   const { startRound, leaveGame } = useGameActions();
   const [copied, setCopied] = useState(false);
@@ -18,6 +24,8 @@ export default function Lobby() {
 
   return (
     <main className="lobby">
+      <MuteButton muted={muted} toggleMute={toggleMute} />
+
       <div className="panel left">
         <h2 className="player-count">
           Players ({players.length}/{maxPlayers}):
@@ -46,7 +54,37 @@ export default function Lobby() {
           <div className="code-wrapper">
             <p className="code">{partyId || "ABC123"}</p>
             <Button variant="tertiary" onClick={handleCopy}>
-              {copied ? "Copied!" : "Copy"}
+              {copied ? (
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M20 6 9 17l-5-5" />
+                </svg>
+              ) : (
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <rect width="14" height="14" x="8" y="8" rx="2" ry="2" />
+                  <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
+                </svg>
+              )}
+              <span>{copied ? "Copied!" : "Copy"}</span>
             </Button>
           </div>
         </div>

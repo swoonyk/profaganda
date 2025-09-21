@@ -14,7 +14,12 @@ export interface Player {
   isHost?: boolean;
 }
 
-export default function GameWindow() {
+type GameWindowProps = {
+  muted: boolean;
+  toggleMute: () => void;
+};
+
+export default function GameWindow({ muted, toggleMute }: GameWindowProps) {
   const {
     phase,
     players,
@@ -60,19 +65,19 @@ export default function GameWindow() {
 
   switch (phase) {
     case "home":
-      return <Home />;
+      return <Home muted={muted} toggleMute={toggleMute} />;
 
     case "lobby":
-      return <Lobby />;
+      return <Lobby muted={muted} toggleMute={toggleMute} />;
 
     case "round":
-      return <Round />;
+      return <Round muted={muted} toggleMute={toggleMute} />;
 
     case "leaderboard":
-      return <Leaderboard />;
+      return <Leaderboard muted={muted} toggleMute={toggleMute} />;
 
     case "end":
-      return <End />;
+      return <End muted={muted} toggleMute={toggleMute} />;
 
     default:
       return null;

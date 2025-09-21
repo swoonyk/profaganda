@@ -2,8 +2,14 @@ import React, { useEffect, useState } from "react";
 import { Button } from "components/ui/Button";
 import { useGameState } from "@/lib/useGameState";
 import { useGameActions } from "@/lib/useGameActions";
+import MuteButton from "components/MuteButton";
 
-export default function Round() {
+type RoundProps = {
+  muted: boolean;
+  toggleMute: () => void;
+};
+
+export default function Round({ muted, toggleMute }: RoundProps) {
   const { players, roundNumber, options = [] } = useGameState();
   const { submitAnswer } = useGameActions();
   const [timeLeft, setTimeLeft] = useState(30);
@@ -23,6 +29,8 @@ export default function Round() {
 
   return (
     <div className="round">
+      <MuteButton muted={muted} toggleMute={toggleMute} />
+
       <div className="header">
         <p>Time left: {timeLeft} secs</p>
         <p>Question {roundNumber} / 5</p>

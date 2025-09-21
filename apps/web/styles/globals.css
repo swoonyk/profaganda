@@ -396,7 +396,29 @@ button:disabled {
   height: 100%;
 }
 
-.btn {
+.unfilled {
+  border: none;
+  background-color: transparent !important;
+  box-shadow: none !important;
+  transform: none !important;
+  padding: 12px;
+  cursor: pointer;
+  transition: 120ms ease-out;
+}
+
+.unfilled:hover {
+  transform: scale(1.1) !important;
+}
+
+.unfilled:active {
+  transform: scale(0.97) !important;
+}
+
+.unfilled svg {
+  color: #fff;
+}
+
+.btn:not(.unfilled) {
   padding: 0.5rem 2rem;
   border-radius: 8px;
   font-weight: 500;
