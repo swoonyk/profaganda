@@ -1,4 +1,3 @@
-// Database entities (MongoDB documents)
 export interface Professor {
   _id?: string;
   internal_code: string;
@@ -6,6 +5,8 @@ export interface Professor {
   school: string;
   department?: string;
   source: 'rmp' | 'cureviews';
+  average_satisfaction?: number;
+  total_reviews?: number;
   created_at: Date;
 }
 
@@ -19,7 +20,6 @@ export interface Review {
   is_ai_generated?: boolean;
 }
 
-// Raw data structures for ingestion
 export interface RawReview {
   id: string;
   professorId: string;
@@ -38,7 +38,6 @@ export interface RawProfessor {
   metadata?: Record<string, any>;
 }
 
-// Gemini API structures
 export interface GeminiSanitizationRequest {
   text: string;
 }
@@ -54,7 +53,6 @@ export interface SanitizationResult {
   error?: string;
 }
 
-// AI Review Generation structures
 export interface ProfessorCharacteristics {
   name: string;
   department: string;
@@ -76,7 +74,6 @@ export interface GenerateReviewResponse {
   sentiment: 'positive' | 'negative' | 'mixed';
 }
 
-// Pipeline configuration
 export interface PipelineConfig {
   geminiApiKey: string;
   mongodbUri: string;
@@ -88,7 +85,6 @@ export interface PipelineConfig {
   retryDelayMs: number;
 }
 
-// API response types
 export interface RandomReviewsResponse {
   reviews: Review[];
 }
@@ -98,7 +94,6 @@ export interface ProfessorReviewsResponse {
   professor: Professor;
 }
 
-// Game API response types
 export interface GameMode1Response {
   review: Review;
   professorOptions: Professor[];

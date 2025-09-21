@@ -1,5 +1,3 @@
-// MongoDB Schema Definitions and Validation
-
 export const professorSchema = {
   bsonType: 'object',
   required: ['internal_code', 'name', 'school', 'source', 'created_at'],
@@ -27,6 +25,17 @@ export const professorSchema = {
       bsonType: 'string',
       enum: ['rmp', 'cureviews'],
       description: 'Source of the professor data'
+    },
+    average_satisfaction: {
+      bsonType: 'double',
+      minimum: 1.0,
+      maximum: 5.0,
+      description: 'Average satisfaction rating calculated from all reviews (1.0-5.0)'
+    },
+    total_reviews: {
+      bsonType: 'int',
+      minimum: 0,
+      description: 'Total number of reviews with ratings used for satisfaction calculation'
     },
     created_at: {
       bsonType: 'date',
@@ -72,7 +81,6 @@ export const reviewSchema = {
   }
 };
 
-// Index definitions for optimal query performance
 export const indexDefinitions = {
   professors: [
     { key: { internal_code: 1 }, options: { unique: true } },

@@ -5,13 +5,13 @@
     "module": "ESNext",
     "moduleResolution": "node",
     "declaration": true,
+    "noEmit": false,
     "outDir": "./dist",
-    "rootDir": "./src",
     "baseUrl": ".",
     "paths": {
       "@profaganda/shared": ["../shared/src"]
     }
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "../shared/src/**/*"],
   "exclude": ["node_modules", "dist"]
 }

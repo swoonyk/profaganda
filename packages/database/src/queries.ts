@@ -14,7 +14,6 @@ export class DatabaseQueries {
     return this.db;
   }
 
-  // Professor operations
   async createProfessor(
     internalCode: string, 
     name: string, 
@@ -28,6 +27,8 @@ export class DatabaseQueries {
       school,
       department,
       source,
+      average_satisfaction: undefined,
+      total_reviews: 0,
       created_at: new Date(),
     };
 
@@ -59,12 +60,10 @@ export class DatabaseQueries {
         _id: professor._id?.toString(),
       };
     } catch (error) {
-      // Invalid ObjectId format
       return null;
     }
   }
 
-  // Review operations
   async createReview(
     professorId: string,
     sanitizedText: string,
@@ -82,6 +81,10 @@ export class DatabaseQueries {
     };
 
     const result = await this.reviewsCollection.insertOne(review as Review);
+    
+    if (rating !== undefined) {
+      await this.updateProfessorSatisfaction(professorId);
+    }
     
     return {
       _id: result.insertedId.toString(),
@@ -120,7 +123,6 @@ export class DatabaseQueries {
     return await this.professorsCollection.countDocuments();
   }
 
-  // Game-specific queries
   async getProfessorsByDepartment(department: string, limit?: number): Promise<Professor[]> {
     const query = department ? { department } : {};
     const cursor = this.professorsCollection.find(query);
@@ -138,7 +140,6 @@ export class DatabaseQueries {
   }
 
   async getRandomProfessorWithReviews(): Promise<{professor: Professor, reviews: Review[]} | null> {
-    // Get a random professor who has reviews
     const professorsWithReviews = await this.professorsCollection.aggregate([
       {
         $lookup: {
@@ -150,7 +151,7 @@ export class DatabaseQueries {
       },
       {
         $match: {
-          'reviews.0': { $exists: true } // Only professors with at least one review
+          'reviews.0': { $exists: true }
         }
       },
       { $sample: { size: 1 } }
@@ -166,7 +167,6 @@ export class DatabaseQueries {
       _id: professorData._id?.toString(),
     } as Professor;
 
-    // Get all reviews for this professor
     const reviews = await this.getReviewsByProfessorId(professor._id!);
 
     return { professor, reviews };
@@ -193,7 +193,6 @@ export class DatabaseQueries {
   }
 
   async getRandomReviewWithProfessor(): Promise<{review: Review, professor: Professor} | null> {
-    // Get a random review with its associated professor
     const reviewsWithProfessor = await this.reviewsCollection.aggregate([
       { $sample: { size: 1 } },
       {
@@ -206,7 +205,7 @@ export class DatabaseQueries {
       },
       {
         $match: {
-          'professor.0': { $exists: true } // Ensure professor exists
+          'professor.0': { $exists: true }
         }
       }
     ]).toArray();
@@ -229,16 +228,90 @@ export class DatabaseQueries {
     return { review, professor };
   }
 
-  // Index creation for performance
+  async updateProfessorSatisfaction(professorId: string): Promise<void> {
+    try {
+      const reviews = await this.reviewsCollection
+        .find({ 
+          professor_id: professorId,
+          rating: { $exists: true, $ne: null }
+        } as any)
+        .toArray();
+
+      if (reviews.length === 0) {
+        await this.professorsCollection.updateOne(
+          { _id: new ObjectId(professorId) } as any,
+          { 
+            $unset: { average_satisfaction: "" },
+            $set: { total_reviews: 0 }
+          }
+        );
+        return;
+      }
+
+      const totalRating = reviews.reduce((sum, review) => sum + (review.rating || 0), 0);
+      const averageSatisfaction = totalRating / reviews.length;
+
+      await this.professorsCollection.updateOne(
+        { _id: new ObjectId(professorId) } as any,
+        { 
+          $set: { 
+            average_satisfaction: Math.round(averageSatisfaction * 100) / 100,
+            total_reviews: reviews.length
+          }
+        }
+      );
+    } catch (error) {
+      console.error(`Error updating satisfaction for professor ${professorId}:`, error);
+      throw error;
+    }
+  }
+
+  async recalculateAllProfessorSatisfactions(): Promise<void> {
+    console.log('Recalculating all professor satisfactions...');
+    
+    const professors = await this.professorsCollection.find({}).toArray();
+    let updated = 0;
+
+    for (const professor of professors) {
+      await this.updateProfessorSatisfaction(professor._id!.toString());
+      updated++;
+      
+      if (updated % 10 === 0) {
+        console.log(`Updated ${updated}/${professors.length} professors`);
+      }
+    }
+
+    console.log(` Completed satisfaction recalculation for ${updated} professors`);
+  }
+
+  async getProfessorsSortedBySatisfaction(limit: number = 10, minReviews: number = 1): Promise<Professor[]> {
+    const professors = await this.professorsCollection
+      .find({
+        average_satisfaction: { $exists: true },
+        total_reviews: { $gte: minReviews }
+      })
+      .sort({ average_satisfaction: -1 })
+      .limit(limit)
+      .toArray();
+
+    return professors.map(professor => ({
+      ...professor,
+      _id: professor._id?.toString(),
+    }));
+  }
+
   async createIndexes(): Promise<void> {
     await Promise.all([
       this.professorsCollection.createIndex({ internal_code: 1 }, { unique: true }),
       this.professorsCollection.createIndex({ source: 1 }),
+      this.professorsCollection.createIndex({ average_satisfaction: -1 }),
+      this.professorsCollection.createIndex({ total_reviews: -1 }),
       this.reviewsCollection.createIndex({ professor_id: 1 }),
       this.reviewsCollection.createIndex({ source: 1 }),
       this.reviewsCollection.createIndex({ sanitized_at: -1 }),
+      this.reviewsCollection.createIndex({ rating: 1 }),
     ]);
-    console.log('✅ Database indexes created');
+    console.log('Database indexes created');
   }
 }
 
