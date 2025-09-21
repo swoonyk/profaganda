@@ -10,11 +10,11 @@ type LobbyProps = {
 };
 
 export default function Lobby({ muted, toggleMute }: LobbyProps) {
-  const { players, partyId } = useGameState();
+  const { players, partyId, gameMode } = useGameState();
   const { startRound, leaveGame } = useGameActions();
   const [copied, setCopied] = useState(false);
-  const [selectedMode, setSelectedMode] = useState<"A" | "B">("A");
   const maxPlayers = 4;
+  const selectedMode = gameMode || "A"; // Get mode from game state
 
   const handleCopy = () => {
     navigator.clipboard.writeText(partyId || "").then(() => {
@@ -90,22 +90,14 @@ export default function Lobby({ muted, toggleMute }: LobbyProps) {
           </div>
         </div>
 
-        {/* Game Mode Selection */}
-        <div className="mode-selection">
-          <div className="mode-options">
-            <div 
-              className={`mode-option ${selectedMode === "A" ? "selected" : ""}`}
-              onClick={() => setSelectedMode("A")}
-            >
-              Mode A
-            </div>
-            <div 
-              className={`mode-option ${selectedMode === "B" ? "selected" : ""}`}
-              onClick={() => setSelectedMode("B")}
-            >
-              Mode B
-            </div>
-          </div>
+        {/* Selected Game Mode Display */}
+        <div style={{ textAlign: "center", margin: "16px 0" }}>
+          <h3 style={{ fontSize: "18px", color: "#0ad6a1", margin: "0 0 8px 0" }}>
+            Selected Mode: {selectedMode}
+          </h3>
+          <p style={{ fontSize: "14px", color: "rgba(255, 255, 255, 0.8)", margin: 0 }}>
+            {selectedMode === "A" ? "Guess the Professor" : "Spot the Fake Review"}
+          </p>
         </div>
 
         <div className="buttons row">
