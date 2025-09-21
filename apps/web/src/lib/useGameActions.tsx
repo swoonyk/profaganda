@@ -14,7 +14,7 @@ export function useGameActions() {
     
     socket.emit('connect_player', {
       playerId,
-      partyId: code || `party-${Math.random().toString(36).slice(2, 8)}`,
+      partyId: code || `${Math.random().toString(36).slice(2, 8)}`,
       isHost,
       name
     });
