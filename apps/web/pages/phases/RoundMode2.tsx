@@ -8,11 +8,10 @@ import { GameMode2Response } from "../../src/shared/types";
 type RoundMode2Props = {
   muted: boolean;
   toggleMute: () => void;
-  gameData?: GameMode2Response;
 };
 
-export default function RoundMode2({ muted, toggleMute, gameData }: RoundMode2Props) {
-  const { players, roundNumber } = useGameState();
+export default function RoundMode2({ muted, toggleMute }: RoundMode2Props) {
+  const { players, roundNumber, gameData, loading } = useGameState();
   const { submitAnswer } = useGameActions();
   const [timeLeft, setTimeLeft] = useState(15);
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
@@ -37,6 +36,9 @@ export default function RoundMode2({ muted, toggleMute, gameData }: RoundMode2Pr
     submitAnswer(answer);
   };
 
+  // Check if we're waiting for data
+  const waitingForData = loading || !gameData || !gameData.professor || !gameData.review;
+
   return (
     <div className="round">
       <MuteButton muted={muted} toggleMute={toggleMute} />
@@ -54,7 +56,32 @@ export default function RoundMode2({ muted, toggleMute, gameData }: RoundMode2Pr
         ))}
       </div>
 
-      {/* Professor info header */}
+      {waitingForData ? (
+        <div style={{ 
+          padding: 32, 
+          textAlign: "center",
+          background: "rgba(255, 255, 255, 0.1)",
+          borderRadius: "16px",
+          margin: "20px auto",
+          maxWidth: "500px"
+        }}>
+          <h3 style={{ color: "#0ad6a1", marginBottom: "16px" }}>Loading Question...</h3>
+          <div style={{ 
+            width: "40px", 
+            height: "40px", 
+            border: "4px solid rgba(10, 214, 161, 0.3)", 
+            borderTop: "4px solid #0ad6a1", 
+            borderRadius: "50%", 
+            animation: "spin 1s linear infinite",
+            margin: "0 auto 16px"
+          }}></div>
+          <p style={{ color: "rgba(255, 255, 255, 0.8)", margin: 0 }}>
+            {loading ? "Fetching professor and review data..." : "Processing question data..."}
+          </p>
+        </div>
+      ) : (
+        <>
+          {/* Professor info header */}
       <div style={{ 
         textAlign: "center", 
         margin: "16px 0", 
@@ -64,11 +91,11 @@ export default function RoundMode2({ muted, toggleMute, gameData }: RoundMode2Pr
         border: "2px solid rgba(255, 255, 255, 0.15)" 
       }}>
         <h3 style={{ fontSize: "28px", marginBottom: "8px", color: "#fff" }}>
-          Professor: {gameData?.professor?.name || "Loading..."}
+          Professor: {gameData?.professor?.name}
         </h3>
         <p style={{ fontSize: "18px", color: "rgba(255, 255, 255, 0.8)", margin: 0 }}>
           {gameData?.professor?.department && `${gameData.professor.department} • `}
-          {gameData?.professor?.school || "Loading..."}
+          {gameData?.professor?.school}
         </p>
         {gameData?.professor?.average_satisfaction && (
           <p style={{ fontSize: "14px", color: "rgba(255, 255, 255, 0.6)", margin: "4px 0 0 0" }}>
@@ -228,7 +255,7 @@ export default function RoundMode2({ muted, toggleMute, gameData }: RoundMode2Pr
       </div>
 
       {/* Results display (for after answer is submitted) */}
-      {/* {selectedAnswer && (
+      {selectedAnswer && (
         <div style={{ 
           textAlign: "center", 
           marginTop: "24px", 
@@ -238,7 +265,9 @@ export default function RoundMode2({ muted, toggleMute, gameData }: RoundMode2Pr
           borderRadius: "12px" 
         }}>
         </div>
-      )} */}
+      )}
+        </>
+      )}
     </div>
   );
 }

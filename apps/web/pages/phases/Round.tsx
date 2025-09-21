@@ -98,14 +98,14 @@ export default function Round({ muted, toggleMute }: RoundProps) {
 
   const canSelect = phase === "round" && !isLocked && timeLeft > 0 && !allAnswered;
 
+  // Check if we're waiting for data
+  const waitingForData = loading || !gameData || !gameData.review || !gameData.professorOptions?.length;
+
   // Get review text from the real data structure
-  const reviewText = gameData?.review?.sanitized_text ?? "Loading review...";
+  const reviewText = waitingForData ? "Loading review..." : gameData.review.sanitized_text;
   
   // Get professor options from the real data structure
-  const professorOptions = gameData?.professorOptions ?? [];
-
-  // Check if we're waiting for data
-  const waitingForData = loading || !gameData || !professorOptions.length;
+  const professorOptions = waitingForData ? [] : gameData.professorOptions;
 
   return (
     <div className="round">

@@ -88,7 +88,7 @@ export default function GameWindow({ muted, toggleMute }: GameWindowProps) {
 
     case "round":
       return gameMode === "B" ? (
-        <RoundMode2 muted={muted} toggleMute={toggleMute} gameData={gameData} />
+        <RoundMode2 muted={muted} toggleMute={toggleMute} />
       ) : (
         <Round muted={muted} toggleMute={toggleMute} />
       );
