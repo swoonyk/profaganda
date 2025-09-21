@@ -56,17 +56,85 @@ export function useGameActions() {
 
       try {
         if (mode === "A") {
-          const response = await fetch("/api/game/mode1/question");
-          if (!response.ok)
-            throw new Error(`API request failed: ${response.status} ${response.statusText}`);
-          gameData = await response.json();
+          // Try production API first, fallback to local API
+          let response: Response;
+          let gameData: any;
+          
+          try {
+            console.log("Trying production API for Mode A...");
+            response = await fetch("https://api-chi-neon.vercel.app/game/mode1/question", {
+              method: "GET",
+              headers: {
+                "Accept": "application/json",
+                "Content-Type": "application/json"
+              },
+              // Add timeout to avoid hanging
+              signal: AbortSignal.timeout(10000) // 10 second timeout
+            });
+            
+            if (!response.ok) {
+              throw new Error(`Production API failed: ${response.status} ${response.statusText}`);
+            }
+            
+            gameData = await response.json();
+            
+            // Check if response has error
+            if (gameData.error) {
+              throw new Error(`Production API error: ${gameData.error}`);
+            }
+            
+            console.log("Production API success for Mode A");
+          } catch (error) {
+            console.warn("Production API failed, trying local API...", error);
+            response = await fetch("/api/game/mode1/question");
+            if (!response.ok) {
+              throw new Error(`Local API request failed: ${response.status} ${response.statusText}`);
+            }
+            gameData = await response.json();
+            console.log("Local API success for Mode A");
+          }
+          
           correctAnswer = gameData.correctProfessorId;
           options = gameData.professorOptions.map((p: any) => p._id);
         } else {
-          const response = await fetch("/api/game/mode2/question");
-          if (!response.ok)
-            throw new Error(`API request failed: ${response.status} ${response.statusText}`);
-          gameData = await response.json();
+          // Try production API first, fallback to local API
+          let response: Response;
+          let gameData: any;
+          
+          try {
+            console.log("Trying production API for Mode B...");
+            response = await fetch("https://api-chi-neon.vercel.app/game/mode2/question", {
+              method: "GET",
+              headers: {
+                "Accept": "application/json",
+                "Content-Type": "application/json"
+              },
+              // Add timeout to avoid hanging
+              signal: AbortSignal.timeout(10000) // 10 second timeout
+            });
+            
+            if (!response.ok) {
+              throw new Error(`Production API failed: ${response.status} ${response.statusText}`);
+            }
+            
+            gameData = await response.json();
+            
+            // Check if response has error
+            if (gameData.error) {
+              throw new Error(`Production API error: ${gameData.error}`);
+            }
+            
+            console.log("Production API success for Mode B");
+          } catch (error) {
+            console.warn("Production API failed, trying local API...", error);
+            response = await fetch("/api/game/mode2/question");
+            if (!response.ok) {
+              throw new Error(`Local API request failed: ${response.status} ${response.statusText}`);
+            }
+            gameData = await response.json();
+            console.log("Local API success for Mode B");
+          }
+          
           correctAnswer = gameData.isRealReview; // true if real, false if AI
           options = ["real", "ai"];
         }

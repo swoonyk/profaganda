@@ -120,13 +120,11 @@ export default function Round({ muted, toggleMute }: RoundProps) {
 
   const canSelect = phase === "round" && !isLocked && timeLeft > 0 && !allAnswered;
 
-  // Try multiple keys for prompt text (adjust to your gameData shape)
-  const questionText =
-    gameData?.reviewText ??
-    gameData?.question ??
-    gameData?.prompt ??
-    gameData?.text ??
-    "";
+  // Get review text from the real data structure
+  const reviewText = gameData?.review?.sanitized_text ?? "Loading review...";
+  
+  // Get professor options from the real data structure
+  const professorOptions = gameData?.professorOptions ?? [];
 
   return (
     <div className="round">
@@ -149,19 +147,54 @@ export default function Round({ muted, toggleMute }: RoundProps) {
         ))}
       </div>
 
+      {/* Review display panel */}
       <div className="panel">
-        <p>{questionText}</p>
+        <div style={{ textAlign: "center", marginBottom: "16px" }}>
+          <h4 style={{ fontSize: "20px", color: "#0ad6a1", marginBottom: "16px" }}>
+            Student Review:
+          </h4>
+        </div>
+        <p style={{ fontSize: "18px", lineHeight: "1.6", textAlign: "center" }}>
+          {reviewText}
+        </p>
       </div>
 
-      <ul className="options-grid">
-        {options.map((opt: string, i: number) => {
-          const isSelected = selected === opt;
+      {/* Question prompt */}
+      <div style={{ textAlign: "center", margin: "24px 0" }}>
+        <h4 style={{ fontSize: "24px", marginBottom: "24px", color: "#fff" }}>
+          Which professor wrote this review?
+        </h4>
+      </div>
+
+      {/* Professor options */}
+      <ul className="options-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px", listStyle: "none", padding: 0 }}>
+        {professorOptions.map((professor: any, i: number) => {
+          const isSelected = selected === professor._id;
           return (
-            <li key={`${i}-${opt}`}>
+            <li key={`${i}-${professor._id}`}>
               <button
                 type="button"
-                onClick={() => onSelect(opt)}
+                onClick={() => onSelect(professor._id)}
                 disabled={!canSelect}
+                style={{
+                  width: "100%",
+                  padding: "20px",
+                  background: isSelected 
+                    ? "rgba(10, 214, 161, 0.2)" 
+                    : "rgba(255, 255, 255, 0.1)",
+                  border: isSelected 
+                    ? "3px solid #0ad6a1" 
+                    : "3px solid rgba(255, 255, 255, 0.2)",
+                  borderRadius: "12px",
+                  color: "#fff",
+                  cursor: canSelect ? "pointer" : "not-allowed",
+                  transition: "all 0.2s ease",
+                  textAlign: "left",
+                  minHeight: "80px",
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "center"
+                }}
                 className={[
                   "option",
                   isSelected ? "selected" : "",
@@ -169,7 +202,13 @@ export default function Round({ muted, toggleMute }: RoundProps) {
                 ].join(" ")}
                 aria-pressed={isSelected}
               >
-                {opt}
+                <div style={{ fontSize: "18px", fontWeight: "600", marginBottom: "4px" }}>
+                  {professor.name}
+                </div>
+                <div style={{ fontSize: "14px", color: "rgba(255, 255, 255, 0.7)" }}>
+                  {professor.department && `${professor.department} • `}
+                  {professor.school}
+                </div>
               </button>
             </li>
           );

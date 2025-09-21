@@ -64,11 +64,18 @@ export default function RoundMode2({ muted, toggleMute, gameData }: RoundMode2Pr
         border: "2px solid rgba(255, 255, 255, 0.15)" 
       }}>
         <h3 style={{ fontSize: "28px", marginBottom: "8px", color: "#fff" }}>
-          Professor: {gameData?.professor?.name || "Dr. Sample"}
+          Professor: {gameData?.professor?.name || "Loading..."}
         </h3>
         <p style={{ fontSize: "18px", color: "rgba(255, 255, 255, 0.8)", margin: 0 }}>
-          {gameData?.professor?.department || "Computer Science Department"}
+          {gameData?.professor?.department && `${gameData.professor.department} • `}
+          {gameData?.professor?.school || "Loading..."}
         </p>
+        {gameData?.professor?.average_satisfaction && (
+          <p style={{ fontSize: "14px", color: "rgba(255, 255, 255, 0.6)", margin: "4px 0 0 0" }}>
+            Average Rating: {gameData.professor.average_satisfaction.toFixed(1)}/5.0
+            {gameData.professor.total_reviews && ` (${gameData.professor.total_reviews} reviews)`}
+          </p>
+        )}
       </div>
 
       {/* Review text panel */}
@@ -79,9 +86,21 @@ export default function RoundMode2({ muted, toggleMute, gameData }: RoundMode2Pr
           </h4>
         </div>
         <p style={{ fontSize: "18px", lineHeight: "1.6", textAlign: "center" }}>
-          {gameData?.review?.sanitized_text || 
-            "This professor is absolutely incredible! Their lectures are always well-structured and engaging. The coursework is challenging but fair, and they provide excellent feedback on assignments. I would definitely recommend taking their class to anyone interested in the subject."}
+          {gameData?.review?.sanitized_text || "Loading review..."}
         </p>
+        {gameData?.review?.rating && (
+          <div style={{ textAlign: "center", marginTop: "16px" }}>
+            <span style={{ 
+              fontSize: "16px", 
+              color: "rgba(255, 255, 255, 0.7)",
+              background: "rgba(255, 255, 255, 0.1)",
+              padding: "6px 12px",
+              borderRadius: "20px"
+            }}>
+              Rating: {gameData.review.rating}/5
+            </span>
+          </div>
+        )}
       </div>
 
       {/* Answer options */}
