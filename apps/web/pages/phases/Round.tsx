@@ -1,4 +1,3 @@
-
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useGameState } from "@/lib/useGameState";
 import { useGameActions } from "@/lib/useGameActions";
@@ -9,16 +8,6 @@ type RoundProps = {
   toggleMute: () => void;
 };
 
-/**
- * Behavior:
- * - Renders ONLY dynamic options from state (no hardcoding).
- * - Allows free selection & re-selection while timer > 0 and not locked.
- * - Locks selection when:
- *    1) time runs out, or
- *    2) all players have answered (server sets players[].hasAnswered = true).
- * - Does NOT reveal correctness in this phase.
- * - Does NOT navigate phase locally; waits for server:round_results which your useGameState handles.
- */
 export default function Round({ muted, toggleMute }: RoundProps) {
   const {
     phase,
@@ -37,6 +26,11 @@ export default function Round({ muted, toggleMute }: RoundProps) {
   const [selected, setSelected] = useState<string | null>(null);
   const [isLocked, setIsLocked] = useState<boolean>(false);
   const endedRef = useRef(false);
+
+  useEffect(() => {
+    console.log("Round:mount", { phase, roundId, gameMode });
+    return () => console.log("Round:unmount");
+  }, []);
 
   // Are hasAnswered flags present from server?
   const hasFlags = useMemo(
@@ -60,6 +54,7 @@ export default function Round({ muted, toggleMute }: RoundProps) {
     setIsLocked(false);
     setSelected(null);
     if (!roundEndsAt) setTimeLeft(30);
+    console.log("Round:reset", { roundId, roundNumber, roundEndsAt });
   }, [roundId, roundNumber, roundEndsAt]);
 
   // Timer: prefer server's authoritative end time; fallback to local countdown
@@ -105,10 +100,11 @@ export default function Round({ muted, toggleMute }: RoundProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [allAnswered]);
 
-  function lock(_reason: "time" | "all-answered") {
+  function lock(reason: "time" | "all-answered") {
     if (endedRef.current) return;
     endedRef.current = true;
     setIsLocked(true);
+    console.log("Round:lock", { reason });
     // Do not change phase here; server will emit server:round_results -> useGameState moves to leaderboard
   }
 
@@ -128,6 +124,8 @@ export default function Round({ muted, toggleMute }: RoundProps) {
     gameData?.text ??
     "";
 
+  const waitingForData = phase === "round" && (!options || options.length === 0) && !questionText;
+
   return (
     <div className="round">
       <MuteButton muted={muted} toggleMute={toggleMute} />
@@ -141,40 +139,45 @@ export default function Round({ muted, toggleMute }: RoundProps) {
         </p>
       </div>
 
-      <div className="scoreboard">
-        {players.map((p: any) => (
-          <p key={p.playerId}>
-            {p.name}: {p.points} {p.yourself && "(you)"} {hasFlags && p.hasAnswered ? "✓" : ""}
+      {waitingForData ? (
+        <div style={{ padding: 16 }}>
+          <h3>Waiting for round data…</h3>
+          <p>We started the round, but haven’t received the question/options yet.</p>
+          <p style={{ fontSize: 12, opacity: 0.8 }}>
+            If this persists, check that the server emits <code>server:round_started</code> with
+            <code>{`{ roundId, options, mode, gameData, roundEndsAt? }`}</code> to the party room.
           </p>
-        ))}
-      </div>
+        </div>
+      ) : (
+        <>
+          <div className="panel">
+            <p>{questionText}</p>
+          </div>
 
-      <div className="panel">
-        <p>{questionText}</p>
-      </div>
-
-      <ul className="options-grid">
-        {options.map((opt: string, i: number) => {
-          const isSelected = selected === opt;
-          return (
-            <li key={`${i}-${opt}`}>
-              <button
-                type="button"
-                onClick={() => onSelect(opt)}
-                disabled={!canSelect}
-                className={[
-                  "option",
-                  isSelected ? "selected" : "",
-                  !canSelect ? "disabled" : "",
-                ].join(" ")}
-                aria-pressed={isSelected}
-              >
-                {opt}
-              </button>
-            </li>
-          );
-        })}
-      </ul>
+          <ul className="options-grid">
+            {options.map((opt: string, i: number) => {
+              const isSelected = selected === opt;
+              return (
+                <li key={`${i}-${opt}`}>
+                  <button
+                    type="button"
+                    onClick={() => onSelect(opt)}
+                    disabled={!canSelect}
+                    className={[
+                      "option",
+                      isSelected ? "selected" : "",
+                      !canSelect ? "disabled" : "",
+                    ].join(" ")}
+                    aria-pressed={isSelected}
+                  >
+                    {opt}
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        </>
+      )}
 
       <div className="footer">
         {canSelect && selected && <p>Answer chosen. You can change it until time runs out.</p>}

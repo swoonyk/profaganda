@@ -11,11 +11,12 @@ export function useGameActions() {
     if (!socket) return;
 
     const onRoundStarted = ({ roundId }: { roundId: string }) => {
+      console.log("useGameActions:onRoundStarted -> roundId", roundId);
       currentRoundIdRef.current = roundId;
     };
     const onRoundResults = () => {
-      // optional: clear on results if you want
-      // currentRoundIdRef.current = null;
+      console.log("useGameActions:onRoundResults");
+      // optional: currentRoundIdRef.current = null;
     };
 
     socket.on("server:round_started", onRoundStarted);
@@ -32,6 +33,12 @@ export function useGameActions() {
 
       const playerId = `player-${Math.random().toString(36).slice(2, 8)}`;
       playerIdRef.current = playerId;
+
+      console.log("useGameActions:joinGame emit connect_player", {
+        playerId,
+        isHost,
+        code,
+      });
 
       socket.emit("connect_player", {
         playerId,
@@ -55,6 +62,8 @@ export function useGameActions() {
       let options: string[] = [];
 
       try {
+        console.log("useGameActions:startRound -> fetching question for mode", mode);
+
         if (mode === "A") {
           const response = await fetch("/api/game/mode1/question");
           if (!response.ok)
@@ -71,7 +80,7 @@ export function useGameActions() {
           options = ["real", "ai"];
         }
 
-        socket.emit("host:start_round", {
+        const payload = {
           roundId,
           mode,
           correctAnswer,
@@ -79,7 +88,9 @@ export function useGameActions() {
           gameData,
           // Prefer computing roundEndsAt on the server and including it in server:round_started
           // roundEndsAt: new Date(Date.now() + 30_000).toISOString()
-        });
+        };
+        console.log("useGameActions:startRound emit host:start_round", payload);
+        socket.emit("host:start_round", payload);
       } catch (error) {
         console.error("Failed to start round:", error);
       }
@@ -94,10 +105,12 @@ export function useGameActions() {
         return;
       }
 
-      socket.emit("player:submit_answer", {
+      const payload = {
         roundId: currentRoundIdRef.current,
         choice,
-      });
+      };
+      console.log("useGameActions:submitAnswer emit player:submit_answer", payload);
+      socket.emit("player:submit_answer", payload);
     },
     [socket]
   );
