@@ -53,12 +53,16 @@ export default function GameWindow() {
         <Round
           players={players}
           updatePoints={updatePoints}
-          onNext={() => setCurrentView("leaderboard")}
+          roundNumber={roundNumber}
+          onNext={() => {
+            setCurrentView("leaderboard");
+          }}
         />
       )}
       {currentView === "leaderboard" && (
         <Leaderboard
           players={players}
+          roundNumber={roundNumber}
           onNext={goToNextRoundOrEnd} // <- switch to next round or end
         />
       )}

@@ -22,6 +22,7 @@ export default function End({ players }: EndProps) {
           </li>
         ))}
       </ul>
+      {/* <p> add like a play again ?</p> */}
     </div>
   );
 }

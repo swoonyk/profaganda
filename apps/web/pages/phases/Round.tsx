@@ -5,6 +5,7 @@ import { Player } from "pages/GameWindow";
 interface RoundProps {
   players: Player[];
   updatePoints: (playerName: string, points: number) => void;
+  roundNumber: number;
   onNext: () => void;
   duration?: number;
 }
@@ -13,6 +14,7 @@ export default function Round({
   players,
   updatePoints,
   onNext,
+  roundNumber,
   duration = 30,
 }: RoundProps) {
   const [timeLeft, setTimeLeft] = useState(duration);
@@ -45,7 +47,7 @@ export default function Round({
       <div className="header">
         <p>Time left: {timeLeft} secs</p>
 
-        <p>Question X on 10</p>
+        <p>Question {roundNumber} of 5</p>
       </div>
 
       <h2>Round</h2>

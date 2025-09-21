@@ -22,18 +22,20 @@ interface LeaderboardProps {
   players: Player[];
   onNext: () => void;
   yourselfName?: string;
+  roundNumber: number;
 }
 
 export default function Leaderboard({
   players,
   onNext,
   yourselfName,
+  roundNumber,
 }: LeaderboardProps) {
   return (
     <div className="leaderboard">
       <div className="header">
         <h1>Leaderboard</h1>
-        <p>Question X out of 10</p>
+        <p>Question {roundNumber} out of 5</p>
       </div>
       <ul>
         {players
