@@ -77,6 +77,7 @@ export function useSocket(): Socket | null {
     
     const onDisconnect = (reason: string) => {
       console.log('Socket disconnected:', reason);
+      console.trace('Socket disconnect stack trace');
     };
 
     client.on('connect', onConnect);
@@ -86,10 +87,8 @@ export function useSocket(): Socket | null {
       client.off('connect', onConnect);
       client.off('disconnect', onDisconnect);
       
-      // Cleanup on unmount
-      if (client.connected) {
-        client.disconnect();
-      }
+      // Don't disconnect socket on component unmount - keep connection alive
+      // Socket will be reused across components
     };
   }, [client]);
 
