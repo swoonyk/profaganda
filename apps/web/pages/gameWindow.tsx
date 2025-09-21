@@ -9,13 +9,6 @@ import { useGameState } from "@/lib/useGameState";
 import { useGameActions } from "@/lib/useGameActions";
 import { useEffect, useState } from "react";
 
-export interface Player {
-  name: string;
-  points: number;
-  yourself?: boolean;
-  isHost?: boolean;
-}
-
 type GameWindowProps = {
   muted: boolean;
   toggleMute: () => void;
@@ -74,35 +67,35 @@ export default function GameWindow({ muted, toggleMute }: GameWindowProps) {
     );
   }
 
-  switch (phase) {
-    case "home":
-      return (
-        <Home
-          onStartLobby={handleStartLobby}
-          muted={muted}
-          toggleMute={toggleMute}
-        />
-      );
+  // switch (phase) {
+  //   case "home":
+  //     return (
+  //       <Home
+  //         onStartLobby={handleStartLobby}
+  //         muted={muted}
+  //         toggleMute={toggleMute}
+  //       />
+  //     );
 
-    case "lobby":
-      return <Lobby muted={muted} toggleMute={toggleMute} />;
+  //   case "lobby":
+  //     return <Lobby muted={muted} toggleMute={toggleMute} />;
 
-    case "round":
-      return gameMode === "B" ? (
-        <RoundMode2 muted={muted} toggleMute={toggleMute} gameData={gameData} />
-      ) : (
-        <Round muted={muted} toggleMute={toggleMute} />
-      );
+  //   case "round":
+  //     return gameMode === "B" ? (
+  //       <RoundMode2 muted={muted} toggleMute={toggleMute} gameData={gameData} />
+  //     ) : (
+  //       <Round muted={muted} toggleMute={toggleMute} />
+  //     );
 
-    case "leaderboard":
-      return <Leaderboard muted={muted} toggleMute={toggleMute} />;
+  //   case "leaderboard":
+  //     return <Leaderboard muted={muted} toggleMute={toggleMute} />;
 
-    case "end":
-      return <End muted={muted} toggleMute={toggleMute} />;
+  //   case "end":
+  //     return <End muted={muted} toggleMute={toggleMute} />;
 
-    default:
-      return null;
-  }
+  //   default:
+  //     return null;
+  // }
 
-  // return <End muted={muted} toggleMute={toggleMute} />;
+  return <End muted={muted} toggleMute={toggleMute} />;
 }

@@ -1,26 +1,24 @@
 import React from "react";
 import { Button } from "components/ui/Button";
-import { useGameState } from "@/lib/useGameState";
+import { Player, useGameState } from "@/lib/useGameState";
 import { useGameActions } from "@/lib/useGameActions";
 import MuteButton from "components/MuteButton";
 
-function LeaderboardItem({
-  player,
-  isYourself,
-}: {
-  player: any;
+interface LeaderboardItemProps {
+  player: Pick<Player, "name" | "points" | "yourself">;
   isYourself?: boolean;
-}) {
+}
+
+function LeaderboardItem({ player, isYourself }: LeaderboardItemProps) {
   return (
     <li
       className={isYourself ? "leaderboard-item yourself" : "leaderboard-item"}
     >
-      <p>
-        {player.name}:
-        {isYourself && <span className="yourself-label"> (You)</span>}
-      </p>
-
-      <p className="pts">{player.points}</p>
+      <p className="player-name">
+        {player.name}{" "}
+        {player.yourself && <span className="yourself-label"> (You)</span>}
+      </p>{" "}
+      <p className="pts player-points">{player.points}</p>
     </li>
   );
 }
@@ -42,6 +40,8 @@ export default function Leaderboard({ muted, toggleMute }: LeaderboardProps) {
     { name: "Esperanza", points: 110, yourself: true },
   ];
 
+  const sortedPlayers = [...players].sort((a, b) => b.points - a.points);
+
   return (
     <div className="leaderboard">
       <MuteButton muted={muted} toggleMute={toggleMute} />
@@ -53,16 +53,9 @@ export default function Leaderboard({ muted, toggleMute }: LeaderboardProps) {
         </div>
 
         <ul>
-          {players
-            .slice()
-            .sort((a, b) => b.points - a.points)
-            .map((p) => (
-              <LeaderboardItem
-                key={p.name}
-                player={p}
-                isYourself={p.yourself}
-              />
-            ))}
+          {sortedPlayers.map((p) => (
+            <LeaderboardItem key={p.name} player={p} />
+          ))}
         </ul>
       </div>
 

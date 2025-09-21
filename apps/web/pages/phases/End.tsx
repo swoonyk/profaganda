@@ -1,5 +1,5 @@
 import React from "react";
-import { useGameState } from "@/lib/useGameState";
+import { Player, useGameState } from "@/lib/useGameState";
 import { useGameActions } from "@/lib/useGameActions";
 import MuteButton from "components/MuteButton";
 import { Button } from "components/ui/Button";
@@ -7,10 +7,14 @@ import { Button } from "components/ui/Button";
 type EndProps = {
   muted: boolean;
   toggleMute: () => void;
+  // player: Pick<Player, "name" | "points" | "yourself">;
+  // isYourself?: boolean;
 };
 
 export default function End({ muted, toggleMute }: EndProps) {
   const { leaveGame } = useGameActions();
+
+  // const { players } = useGameState();
 
   // Fake data for testing
   const players = [
@@ -33,7 +37,7 @@ export default function End({ muted, toggleMute }: EndProps) {
 
       <h2>Game Over!</h2>
       <div className="podium">
-        {podiumPlayers.map((p, idx) => (
+        {sortedPlayers.map((p, idx) => (
           <div
             key={p.name}
             className={`podium-step step-${idx + 1} ${
@@ -49,7 +53,7 @@ export default function End({ muted, toggleMute }: EndProps) {
 
       <h3>All Scores:</h3>
       <ul>
-        {players.map((p) => (
+        {sortedPlayers.map((p) => (
           <li key={p.name}>
             <p>
               {p.name} {p.yourself && "(you)"}

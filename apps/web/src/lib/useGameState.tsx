@@ -71,8 +71,25 @@ export function useGameState() {
     // Round started
     socket.on(
       "server:round_started",
-      ({ roundId, options, mode, gameData }: { roundId: string; options: string[]; mode?: "A" | "B"; gameData?: any }) =>
-        setGameState((prev) => ({ ...prev, phase: "round", roundId, options, gameMode: mode, gameData }))
+      ({
+        roundId,
+        options,
+        mode,
+        gameData,
+      }: {
+        roundId: string;
+        options: string[];
+        mode?: "A" | "B";
+        gameData?: any;
+      }) =>
+        setGameState((prev) => ({
+          ...prev,
+          phase: "round",
+          roundId,
+          options,
+          gameMode: mode,
+          gameData,
+        }))
     );
 
     // Round results
