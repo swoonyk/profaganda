@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Home from "./phases/Home";
 import Lobby from "./phases/Lobby";
 import Round from "./phases/Round";
@@ -7,7 +7,9 @@ import Leaderboard from "./phases/Leaderboard";
 import End from "./phases/End";
 import { useGameState } from "@/lib/useGameState";
 import { useGameActions } from "@/lib/useGameActions";
-import { useEffect, useState } from "react";
+
+// Use types from useGameState to avoid drift
+// import type { Player } from "@/lib/useGameState";
 
 type GameWindowProps = {
   muted: boolean;
@@ -31,28 +33,16 @@ export default function GameWindow({ muted, toggleMute }: GameWindowProps) {
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => setIsClient(true), []);
-  // const forcedPhase = "round";
 
-  const handleStartLobby = (
-    name: string,
-    isHost: boolean,
-    code?: string,
-    mode?: "A" | "B"
-  ) => {
+  const handleStartLobby = (name: string, isHost: boolean, code?: string, mode?: "A" | "B") => {
     // Create a temporary playerId for optimistic UI
     const tempPlayerId = "temp_" + Math.random().toString(36).substr(2, 9);
-    const selectedMode = mode || "A";
-
-    // Store mode in localStorage to persist across socket events
-    if (typeof window !== "undefined") {
-      localStorage.setItem("selectedGameMode", selectedMode);
-    }
 
     // Optimistic UI: show yourself immediately
     setGameState((prev) => ({
       ...prev,
       phase: "lobby",
-      gameMode: selectedMode, // Store the selected mode
+      gameMode: mode || "A", // Store the selected mode
       players: [
         { name, points: 0, yourself: true, isHost, playerId: tempPlayerId },
       ],
@@ -108,6 +98,4 @@ export default function GameWindow({ muted, toggleMute }: GameWindowProps) {
     default:
       return null;
   }
-
-  // return <End muted={muted} toggleMute={toggleMute} />;
 }

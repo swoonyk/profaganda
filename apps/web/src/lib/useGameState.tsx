@@ -7,7 +7,7 @@ export interface Player {
   points: number;
   yourself?: boolean;
   isHost?: boolean;
-  // NEW: server sets true once player has submitted at least once in the current round
+  // Server sets true once player has submitted at least once in the current round
   hasAnswered?: boolean;
 }
 
@@ -23,7 +23,7 @@ export interface GameState {
   gameMode?: "A" | "B";
   gameData?: any;
 
-  // NEW: authoritative end time (optional, recommended if server provides)
+  // Authoritative end time (optional, recommended if server provides)
   roundEndsAt?: string; // ISO timestamp like "2025-09-21T09:00:00.000Z"
 }
 
@@ -39,37 +39,46 @@ export function useGameState() {
   useEffect(() => {
     if (!socket) return;
 
-    // Connection
-    socket.on("connect", () =>
-      setGameState((prev) => ({ ...prev, connected: true, gameMode: prev.gameMode }))
-    );
-    socket.on("disconnect", () =>
-      setGameState((prev) => ({ ...prev, connected: false, gameMode: prev.gameMode }))
-    );
+    // --- Named handlers so we can .off() them later ---
 
-    // Server assigns player ID and party ID
-    socket.on(
-      "connected",
-      ({ playerId, partyId }: { playerId: string; partyId: string }) => {
-        setGameState((prev) => {
-          console.log("Connected - preserving gameMode:", prev.gameMode);
-          // Get gameMode from localStorage if it's lost
-          const storedMode = typeof window !== "undefined" 
-            ? localStorage.getItem("selectedGameMode") as "A" | "B" | null
+    const onConnect = () => {
+      setGameState((prev) => ({
+        ...prev,
+        connected: true,
+        gameMode: prev.gameMode, // preserve
+      }));
+    };
+
+    const onDisconnect = () => {
+      setGameState((prev) => ({
+        ...prev,
+        connected: false,
+        gameMode: prev.gameMode, // preserve
+      }));
+    };
+
+    const onConnected = ({
+      playerId,
+      partyId,
+    }: {
+      playerId: string;
+      partyId: string;
+    }) => {
+      setGameState((prev) => {
+        // Fall back to stored mode if prev lost it
+        const storedMode =
+          typeof window !== "undefined"
+            ? (localStorage.getItem("selectedGameMode") as "A" | "B" | null)
             : null;
-          const gameMode = prev.gameMode || storedMode || "A";
-          console.log("Using gameMode:", gameMode, "from storage:", storedMode);
-          
-          return { ...prev, playerId, partyId, gameMode };
-        });
-      }
-    );
+        const gameMode = prev.gameMode || storedMode || "A";
+        return { ...prev, playerId, partyId, gameMode };
+      });
+    };
 
-    // Update player list from server (preserve hasAnswered if provided)
     const onPlayersUpdate = ({ players }: { players: Player[] }) => {
       setGameState((prev) => ({
         ...prev,
-        gameMode: prev.gameMode, // Preserve gameMode
+        gameMode: prev.gameMode, // preserve
         players: players.map((p) => ({
           ...p,
           yourself: p.playerId === prev.playerId,
@@ -77,16 +86,15 @@ export function useGameState() {
         })),
       }));
     };
-    socket.on("server:players_update", onPlayersUpdate);
 
-    // Phase changes
-    socket.on(
-      "server:phase_change",
-      ({ phase }: { phase: GameState["phase"] }) =>
-        setGameState((prev) => ({ ...prev, phase, gameMode: prev.gameMode }))
-    );
+    const onPhaseChange = ({ phase }: { phase: GameState["phase"] }) => {
+      setGameState((prev) => ({
+        ...prev,
+        phase,
+        gameMode: prev.gameMode, // preserve
+      }));
+    };
 
-    // Round started (accept roundEndsAt if server provides it)
     const onRoundStarted = ({
       roundId,
       options,
@@ -99,35 +107,48 @@ export function useGameState() {
       mode?: "A" | "B";
       gameData?: any;
       roundEndsAt?: string;
-    }) =>
+    }) => {
       setGameState((prev) => ({
         ...prev,
         phase: "round",
         roundId,
         options,
-        gameMode: mode,
+        gameMode: mode, // server may override with chosen mode
         gameData,
-        roundEndsAt, // may be undefined; UI will fall back to local timer
+        roundEndsAt, // may be undefined; UI falls back to local timer
       }));
+    };
+
+    const onRoundResults = ({
+      players,
+      roundNumber,
+    }: {
+      players: Player[];
+      roundNumber: number;
+    }) => {
+      setGameState((prev) => ({
+        ...prev,
+        phase: "leaderboard",
+        gameMode: prev.gameMode, // preserve
+        players: players.map((p) => ({
+          ...p,
+          yourself: p.playerId === prev.playerId,
+        })),
+        roundNumber,
+        roundEndsAt: undefined, // clear timing at end of round
+      }));
+    };
+
+    // --- Register with named handlers ---
+    socket.on("connect", onConnect);
+    socket.on("disconnect", onDisconnect);
+    socket.on("connected", onConnected);
+    socket.on("server:players_update", onPlayersUpdate);
+    socket.on("server:phase_change", onPhaseChange);
     socket.on("server:round_started", onRoundStarted);
+    socket.on("server:round_results", onRoundResults);
 
-    // Round results
-    socket.on(
-      "server:round_results",
-      ({ players, roundNumber }: { players: Player[]; roundNumber: number }) =>
-        setGameState((prev) => ({
-          ...prev,
-          phase: "leaderboard",
-          gameMode: prev.gameMode, // Preserve gameMode
-          players: players.map((p) => ({
-            ...p,
-            yourself: p.playerId === prev.playerId,
-          })),
-          roundNumber,
-        }))
-    );
-
-    // Cleanup
+    // --- Cleanup with the same named handlers ---
     return () => {
       socket.off("connect", onConnect);
       socket.off("disconnect", onDisconnect);
