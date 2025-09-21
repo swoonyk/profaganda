@@ -35,21 +35,28 @@ export function useGameActions() {
       let options: string[] = [];
 
       try {
-        // if (mode === "A") {
-        //   const response = await fetch(
-        //     `${process.env.NEXT_PUBLIC_API_URL || ''}/game/mode1/question`
-        //   );
-        //   gameData = await response.json();
-        //   correctAnswer = gameData.correctProfessorId;
-        //   options = gameData.professorOptions.map((p: any) => p._id);
-        // } else {
-        //   const response = await fetch(
-        //     `${process.env.NEXT_PUBLIC_API_URL || ''}/game/mode2/question`
-        //   );
-        //   gameData = await response.json();
-        //   correctAnswer = gameData.isRealReview; // true if real, false if AI
-        //   options = ["real", "ai"];
-        // }
+        // Use relative API paths for same-origin requests (no CORS issues)
+        if (mode === "A") {
+          const response = await fetch("/api/game/mode1/question");
+          if (!response.ok) {
+            throw new Error(
+              `API request failed: ${response.status} ${response.statusText}`
+            );
+          }
+          gameData = await response.json();
+          correctAnswer = gameData.correctProfessorId;
+          options = gameData.professorOptions.map((p: any) => p._id);
+        } else {
+          const response = await fetch("/api/game/mode2/question");
+          if (!response.ok) {
+            throw new Error(
+              `API request failed: ${response.status} ${response.statusText}`
+            );
+          }
+          gameData = await response.json();
+          correctAnswer = gameData.isRealReview; // true if real, false if AI
+          options = ["real", "ai"];
+        }
 
         socket.emit("host:start_round", {
           roundId,

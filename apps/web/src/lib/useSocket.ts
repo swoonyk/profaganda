@@ -7,7 +7,7 @@ let socket: Socket | null = null;
 export function useSocket(): Socket | null {
   const [isClient, setIsClient] = useState(false);
   
-  const url = process.env.NEXT_PUBLIC_SOCKET_SERVER_URL || 'http://localhost:4000';
+  const url = 'https://socket.hodgman.net'; // Use environment variable or default URL
 
   useEffect(() => {
     setIsClient(true);
@@ -18,7 +18,7 @@ export function useSocket(): Socket | null {
       return null;
     }
     
-    if (!socket) {
+    if (!socket && url) {
       // Determine if we should use secure connection based on URL or current page protocol
       const isSecure = url.startsWith('https://') || url.startsWith('wss://') || 
                       (typeof window !== 'undefined' && window.location.protocol === 'https:');
@@ -62,7 +62,7 @@ export function useSocket(): Socket | null {
         console.log(`Reconnection attempt ${attempt}`);
       });
     }
-    return socket;
+    return url ? socket : null;
   }, [isClient, url]);
 
   useEffect(() => {
@@ -77,6 +77,7 @@ export function useSocket(): Socket | null {
     
     const onDisconnect = (reason: string) => {
       console.log('Socket disconnected:', reason);
+      console.trace('Socket disconnect stack trace');
     };
 
     client.on('connect', onConnect);
@@ -86,10 +87,8 @@ export function useSocket(): Socket | null {
       client.off('connect', onConnect);
       client.off('disconnect', onDisconnect);
       
-      // Cleanup on unmount
-      if (client.connected) {
-        client.disconnect();
-      }
+      // Don't disconnect socket on component unmount - keep connection alive
+      // Socket will be reused across components
     };
   }, [client]);
 
