@@ -15,6 +15,8 @@ export default function Home({ onStartLobby, muted, toggleMute }: HomeProps) {
   const [code, setCode] = useState("");
   const [error, setError] = useState("");
   const [selectedMode, setSelectedMode] = useState<"A" | "B">("A");
+  
+  console.log("Home - selectedMode:", selectedMode);
 
   const handleCreate = () => {
     if (!name.trim() || name.trim().length > 13) {
@@ -117,6 +119,7 @@ export default function Home({ onStartLobby, muted, toggleMute }: HomeProps) {
               <div className="buttons">
                 <Tabs
                   tabs={["Mode A", "Mode B"]}
+                  activeTab={selectedMode === "A" ? 0 : 1}
                   onTabChange={(i) => setSelectedMode(i === 0 ? "A" : "B")}
                 />
 
