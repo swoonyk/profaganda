@@ -19,10 +19,31 @@ const io = new Server(server, {
 const rounds = new Map();
 // partyId -> Map<playerId, score>
 const leaderboards = new Map();
+// partyId -> Map<playerId, { name, isHost }>
+const parties = new Map();
 
 function lbFor(partyId) {
   if (!leaderboards.has(partyId)) leaderboards.set(partyId, new Map());
   return leaderboards.get(partyId);
+}
+
+function partyFor(partyId) {
+  if (!parties.has(partyId)) parties.set(partyId, new Map());
+  return parties.get(partyId);
+}
+
+function broadcastPlayersUpdate(partyId) {
+  const party = partyFor(partyId);
+  const lb = lbFor(partyId);
+  
+  const players = Array.from(party.entries()).map(([playerId, playerData]) => ({
+    name: playerData.name || playerId,
+    points: lb.get(playerId) || 0,
+    yourself: false, // This will be set client-side
+    isHost: playerData.isHost || false
+  }));
+  
+  io.to(`party:${partyId}`).emit('server:players_update', { players });
 }
 
 function endRound(roundId, partyId) {
@@ -30,16 +51,28 @@ function endRound(roundId, partyId) {
   if (!round) return;
 
   const lb = lbFor(partyId);
+  const party = partyFor(partyId);
+  const players = Array.from(lb.entries())
+    .map(([playerId, score]) => ({
+      name: party.get(playerId)?.name || playerId,
+      points: score,
+      yourself: false, // This will be set client-side
+      isHost: party.get(playerId)?.isHost || false
+    }))
+    .sort((a, b) => b.points - a.points);
+
   const results = {
     roundId,
     mode: round.mode,
     correctAnswer: round.correctAnswer,
     counts: round.counts,
-    leaderboard: Array.from(lb.entries())
-      .map(([playerId, score]) => ({ playerId, score }))
-      .sort((a, b) => b.score - a.score)
+    players,
+    roundNumber: 1 // TODO: Track actual round number
   };
 
+  // Change phase to leaderboard
+  io.to(`party:${partyId}`).emit('server:phase_change', { phase: 'leaderboard' });
+  
   io.to(`party:${partyId}`).emit('server:round_results', results);
 
   if (round.timeout) clearTimeout(round.timeout);
@@ -55,13 +88,30 @@ io.on('connection', (socket) => {
   console.log('Socket connected:', socket.id);
 
   // Player joins a party
-  socket.on('connect_player', ({ playerId, partyId, isHost }) => {
+  socket.on('connect_player', ({ playerId, partyId, isHost, name }) => {
     if (!playerId || !partyId) return;
     socket.data.playerId = playerId;
     socket.data.partyId = partyId;
     socket.data.isHost = !!isHost;
     socket.join(`party:${partyId}`);
+    
+    // Add player to party tracking
+    const party = partyFor(partyId);
+    party.set(playerId, { 
+      name: name || playerId, 
+      isHost: !!isHost 
+    });
+    
     socket.emit('connected', { playerId, partyId });
+    
+    // Broadcast updated players list
+    broadcastPlayersUpdate(partyId);
+    
+    // If this is the first player (host), change phase to lobby
+    if (isHost) {
+      io.to(`party:${partyId}`).emit('server:phase_change', { phase: 'lobby' });
+    }
+    
     console.log(`Player ${playerId} joined party ${partyId}`);
   });
 
@@ -90,6 +140,9 @@ io.on('connection', (socket) => {
         timeout
       });
 
+      // Change phase to round
+      io.to(`party:${pId}`).emit('server:phase_change', { phase: 'round' });
+      
       // Broadcast round start (clients render from this)
       io.to(`party:${pId}`).emit('server:round_started', {
         roundId,
@@ -159,7 +212,10 @@ io.on('connection', (socket) => {
       `correct=${correct}, points=${points}, totalScore=${lb.get(playerId)}`
     );
 
-    socket.emit('server:answer_ack', { roundId, accepted: true });
+    socket.emit('server:answer_ack', { roundId, accepted: true, correct, points });
+    
+    // Broadcast updated players list with new scores
+    broadcastPlayersUpdate(partyId);
   });
 
   // Host ends the round manually (optional if auto-timer is on)
@@ -172,7 +228,18 @@ io.on('connection', (socket) => {
   });
 
   socket.on('disconnect', () => {
-    // Optional: handle disconnects
+    const playerId = socket.data.playerId;
+    const partyId = socket.data.partyId;
+    
+    if (playerId && partyId) {
+      const party = partyFor(partyId);
+      party.delete(playerId);
+      
+      // Broadcast updated players list
+      broadcastPlayersUpdate(partyId);
+      
+      console.log(`Player ${playerId} disconnected from party ${partyId}`);
+    }
   });
 });
 

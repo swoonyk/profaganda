@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import GameWindow from "./GameWindow";
+import GameWindow from "./gameWindow";
 
 function App() {
   return (

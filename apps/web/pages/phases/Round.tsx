@@ -45,6 +45,9 @@ export default function Round({
         <p>
           Question {roundNumber} <span className="slash">/</span> 5
         </p>
+        <p style={{ fontSize: '12px', color: '#666' }}>
+          Players in game: {players.length}
+        </p>
       </div>
 
       {/* Optional scoreboard */}

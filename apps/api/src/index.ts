@@ -330,17 +330,17 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
 });
 
 app.listen(PORT, () => {
-  console.log(` API server running on port ${PORT}`);
-  console.log(` Available endpoints:`);
-  console.log(`   GET /health - Health check`);
-  console.log(`   GET /reviews/random?count=N - Get N random reviews`);
-  console.log(`   GET /reviews/by-professor/:id - Get reviews for professor`);
-  console.log(`   GET /professors - Get all professors with satisfaction data`);
-  console.log(`   GET /professors/top-rated?limit=N&min_reviews=N - Get top-rated professors`);
-  console.log(`   GET /stats - Get database statistics`);
-  console.log(`   Game endpoints:`);
-  console.log(`   GET /game/mode1/question - Game mode 1: Review + 4 professor options`);
-  console.log(`   GET /game/mode2/question - Game mode 2: Professor + real/fake review`);
+  // console.log(` API server running on port ${PORT}`);
+  // console.log(` Available endpoints:`);
+  // console.log(`   GET /health - Health check`);
+  // console.log(`   GET /reviews/random?count=N - Get N random reviews`);
+  // console.log(`   GET /reviews/by-professor/:id - Get reviews for professor`);
+  // console.log(`   GET /professors - Get all professors with satisfaction data`);
+  // console.log(`   GET /professors/top-rated?limit=N&min_reviews=N - Get top-rated professors`);
+  // console.log(`   GET /stats - Get database statistics`);
+  // console.log(`   Game endpoints:`);
+  // console.log(`   GET /game/mode1/question - Game mode 1: Review + 4 professor options`);
+  // console.log(`   GET /game/mode2/question - Game mode 2: Professor + real/fake review`);
 });
 
 process.on('SIGTERM', async () => {

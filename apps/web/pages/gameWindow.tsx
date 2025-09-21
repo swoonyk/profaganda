@@ -5,6 +5,7 @@ import Leaderboard from "./phases/Leaderboard";
 import End from "./phases/End";
 import { useGameState } from "@/lib/useGameState";
 import { useGameActions } from "@/lib/useGameActions";
+import { useEffect, useState } from "react";
 
 export interface Player {
   name: string;
@@ -14,21 +15,41 @@ export interface Player {
 }
 
 export default function GameWindow() {
-  const { phase, players, roundNumber, options, partyId } = useGameState();
+  const { phase, players, roundNumber, options, partyId, connected, roundId } = useGameState();
   const { joinGame, startRound, submitAnswer, leaveGame } = useGameActions();
+  const [isClient, setIsClient] = useState(false);
 
-  // Host starts lobby
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
   const handleStartLobby = (name: string, isHost: boolean, code?: string) => {
     joinGame(name, isHost, code);
   };
 
-  // Host manually advances to next round (or ends game)
   const handleNextRound = () => {
-    startRound(); // emits socket event to server
-    // server will send back updated roundNumber and phase
+    startRound();
   };
 
-  // Pass all original props to children
+  // Show loading until client-side is ready
+  if (!isClient) {
+    return (
+      <div style={{ padding: '20px', textAlign: 'center' }}>
+        <h2>Loading...</h2>
+      </div>
+    );
+  }
+
+  // Show connection status if not connected
+  if (!connected) {
+    return (
+      <div style={{ padding: '20px', textAlign: 'center' }}>
+        <h2>Connecting to server...</h2>
+        <p>Make sure the socket server is running on port 4000</p>
+      </div>
+    );
+  }
+
   switch (phase) {
     case "home":
       return <Home onStartLobby={handleStartLobby} />;
