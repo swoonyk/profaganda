@@ -1,6 +1,9 @@
 import { Button } from "components/ui/Button";
 import React, { useState } from "react";
-import { useGameActions } from "@/lib/useGameActions";
+
+interface HomeProps {
+  onStartLobby: (name: string, isHost: boolean, code?: string) => void;
+}
 import MuteButton from "components/MuteButton";
 
 type HomeProps = {
@@ -8,8 +11,7 @@ type HomeProps = {
   toggleMute: () => void;
 };
 
-export default function Home({ muted, toggleMute }: HomeProps) {
-  const { joinGame } = useGameActions();
+export default function Home({ muted, toggleMute }: HomeProps{ onStartLobby }: HomeProps) {
   const [view, setView] = useState<"buttons" | "create" | "join">("buttons");
   const [name, setName] = useState("");
   const [code, setCode] = useState("");
@@ -21,7 +23,7 @@ export default function Home({ muted, toggleMute }: HomeProps) {
       return;
     }
     setError("");
-    joinGame(name.trim(), true);
+    onStartLobby(name.trim(), true); // Notify parent to create lobby
   };
 
   const handleJoin = () => {
@@ -34,7 +36,7 @@ export default function Home({ muted, toggleMute }: HomeProps) {
       return;
     }
     setError("");
-    joinGame(name.trim(), false, code.trim());
+    onStartLobby(name.trim(), false, code.trim()); // Notify parent to join lobby
   };
 
   // 🔑 Always render mute button

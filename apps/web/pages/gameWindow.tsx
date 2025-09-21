@@ -1,3 +1,4 @@
+import React from "react";
 import Home from "./phases/Home";
 import Lobby from "./phases/Lobby";
 import Round from "./phases/Round";
@@ -36,14 +37,15 @@ export default function GameWindow({ muted, toggleMute }: GameWindowProps) {
   useEffect(() => setIsClient(true), []);
 
   const handleStartLobby = (name: string, isHost: boolean, code?: string) => {
-    // Optimistic local update
+    // Optimistic UI: show yourself immediately
     setGameState((prev) => ({
       ...prev,
       phase: "lobby",
       players: [{ name, points: 0, yourself: true, isHost }],
     }));
 
-    joinGame(name, isHost, code); // emit to server
+    // Tell the server
+    joinGame(name, isHost, code);
   };
 
   if (!isClient) {
@@ -65,7 +67,13 @@ export default function GameWindow({ muted, toggleMute }: GameWindowProps) {
 
   switch (phase) {
     case "home":
-      return <Home muted={muted} toggleMute={toggleMute} />;
+      return (
+        <Home
+          onStartLobby={handleStartLobby}
+          muted={muted}
+          toggleMute={toggleMute}
+        />
+      );
 
     case "lobby":
       return <Lobby muted={muted} toggleMute={toggleMute} />;
