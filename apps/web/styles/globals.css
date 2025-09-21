@@ -314,3 +314,24 @@ button:disabled {
   font-size: 28px;
   font-family: "Cherry Cream Soda", system-ui;
 }
+
+.round .option {
+  width: 50%;
+  height: 200px;
+  border-radius: 16px;
+  padding: 16px;
+  background: #fff;
+  box-shadow: 0 6px 0 #a6a6a6;
+  transition: 120ms ease-out;
+  cursor: pointer;
+}
+
+.round .option:hover {
+  box-shadow: 0 10px 0 #a6a6a6;
+  transform: translateY(-4px);
+}
+
+.round .option:active {
+  box-shadow: 0 4px 0 #a6a6a6;
+  transform: translateY(2px);
+}

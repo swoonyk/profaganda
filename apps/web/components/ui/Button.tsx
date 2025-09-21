@@ -19,18 +19,36 @@ const baseStyle: React.CSSProperties = {
   fontSize: "20px",
 };
 
-const activeStyles: Record<ButtonVariant, React.CSSProperties> = {
+const hoverStyles: Record<ButtonVariant, React.CSSProperties> = {
   primary: {
-    boxShadow: "0 2px 0 #007658",
-    transform: "translateY(4px)",
+    backgroundColor: "#09af83ff",
+    boxShadow: "0 10px 0 #007658",
+    transform: "translateY(-4px)",
   },
   secondary: {
-    boxShadow: "0 2px 0 #A6A6A6",
-    transform: "translateY(4px)",
+    backgroundColor: "#cfd1d6ff",
+    boxShadow: "0 10px 0 #A6A6A6",
+    transform: "translateY(-4px)",
   },
   tertiary: {
-    boxShadow: "0 2px 0 #082E53",
-    transform: "translateY(4px)",
+    backgroundColor: "#1f4c79ff",
+    boxShadow: "0 10px 0 #082E53",
+    transform: "translateY(-4px)",
+  },
+};
+
+const activeStyles: Record<ButtonVariant, React.CSSProperties> = {
+  primary: {
+    boxShadow: "0 4px 0 #007658",
+    transform: "translateY(2px)",
+  },
+  secondary: {
+    boxShadow: "0 4px 0 #A6A6A6",
+    transform: "translateY(2px)",
+  },
+  tertiary: {
+    boxShadow: "0 4px 0 #082E53",
+    transform: "translateY(2px)",
   },
 };
 
@@ -49,17 +67,6 @@ const variantStyles: Record<ButtonVariant, React.CSSProperties> = {
     backgroundColor: "#2B5D8E",
     color: "#ffffff",
     boxShadow: "0 6px 0 #082E53",
-  },
-};
-const hoverStyles: Record<ButtonVariant, React.CSSProperties> = {
-  primary: {
-    backgroundColor: "#09af83ff",
-  },
-  secondary: {
-    backgroundColor: "#cfd1d6ff",
-  },
-  tertiary: {
-    backgroundColor: "#1f4c79ff",
   },
 };
 
