@@ -48,7 +48,8 @@ export function useGameState() {
       ({ playerId, partyId }: { playerId: string; partyId: string }) => {
         setGameState((prev) => {
           console.log("Connected - preserving gameMode:", prev.gameMode);
-          return { ...prev, playerId, partyId };
+          // Ensure gameMode is preserved during connection events
+          return { ...prev, playerId, partyId, gameMode: prev.gameMode };
         });
       }
     );
@@ -57,6 +58,7 @@ export function useGameState() {
     socket.on("server:players_update", ({ players }: { players: Player[] }) => {
       setGameState((prev) => ({
         ...prev,
+        gameMode: prev.gameMode, // Preserve gameMode
         players: players.map((p) => ({
           ...p,
           yourself: p.playerId === prev.playerId,
@@ -68,7 +70,7 @@ export function useGameState() {
     socket.on(
       "server:phase_change",
       ({ phase }: { phase: GameState["phase"] }) =>
-        setGameState((prev) => ({ ...prev, phase }))
+        setGameState((prev) => ({ ...prev, phase, gameMode: prev.gameMode }))
     );
 
     // Round started
@@ -102,6 +104,7 @@ export function useGameState() {
         setGameState((prev) => ({
           ...prev,
           phase: "leaderboard",
+          gameMode: prev.gameMode, // Preserve gameMode
           players: players.map((p) => ({
             ...p,
             yourself: p.playerId === prev.playerId,
