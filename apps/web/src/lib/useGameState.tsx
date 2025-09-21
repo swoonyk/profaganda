@@ -40,10 +40,12 @@ export function useGameState() {
     if (!socket) return;
 
     // Connection
-    const onConnect = () => setGameState((prev) => ({ ...prev, connected: true }));
-    const onDisconnect = () => setGameState((prev) => ({ ...prev, connected: false }));
-    socket.on("connect", onConnect);
-    socket.on("disconnect", onDisconnect);
+    socket.on("connect", () =>
+      setGameState((prev) => ({ ...prev, connected: true, gameMode: prev.gameMode }))
+    );
+    socket.on("disconnect", () =>
+      setGameState((prev) => ({ ...prev, connected: false, gameMode: prev.gameMode }))
+    );
 
     // Server assigns player ID and party ID
     socket.on(
@@ -51,8 +53,14 @@ export function useGameState() {
       ({ playerId, partyId }: { playerId: string; partyId: string }) => {
         setGameState((prev) => {
           console.log("Connected - preserving gameMode:", prev.gameMode);
-          // Ensure gameMode is preserved during connection events
-          return { ...prev, playerId, partyId, gameMode: prev.gameMode };
+          // Get gameMode from localStorage if it's lost
+          const storedMode = typeof window !== "undefined" 
+            ? localStorage.getItem("selectedGameMode") as "A" | "B" | null
+            : null;
+          const gameMode = prev.gameMode || storedMode || "A";
+          console.log("Using gameMode:", gameMode, "from storage:", storedMode);
+          
+          return { ...prev, playerId, partyId, gameMode };
         });
       }
     );

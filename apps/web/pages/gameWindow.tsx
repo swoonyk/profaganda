@@ -41,12 +41,18 @@ export default function GameWindow({ muted, toggleMute }: GameWindowProps) {
   ) => {
     // Create a temporary playerId for optimistic UI
     const tempPlayerId = "temp_" + Math.random().toString(36).substr(2, 9);
+    const selectedMode = mode || "A";
+
+    // Store mode in localStorage to persist across socket events
+    if (typeof window !== "undefined") {
+      localStorage.setItem("selectedGameMode", selectedMode);
+    }
 
     // Optimistic UI: show yourself immediately
     setGameState((prev) => ({
       ...prev,
       phase: "lobby",
-      gameMode: mode || "A", // Store the selected mode
+      gameMode: selectedMode, // Store the selected mode
       players: [
         { name, points: 0, yourself: true, isHost, playerId: tempPlayerId },
       ],
