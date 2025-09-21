@@ -9,6 +9,29 @@ export default function Home({ onStartLobby }: HomeProps) {
   const [view, setView] = useState<"buttons" | "create" | "join">("buttons");
   const [name, setName] = useState("");
   const [code, setCode] = useState("");
+  const [error, setError] = useState("");
+
+  const handleCreate = () => {
+    if (!name.trim()) {
+      setError("Name cannot be blank.");
+      return;
+    }
+    setError("");
+    onStartLobby(name.trim(), true);
+  };
+
+  const handleJoin = () => {
+    if (!name.trim()) {
+      setError("Name cannot be blank.");
+      return;
+    }
+    if (code.trim().length !== 6) {
+      setError("Game code must be 6 characters.");
+      return;
+    }
+    setError("");
+    onStartLobby(name.trim(), false, code.trim());
+  };
 
   // render the splash buttons
   if (view === "buttons") {
@@ -38,17 +61,22 @@ export default function Home({ onStartLobby }: HomeProps) {
 
         <div className="buttons">
           <Button
-            onClick={() => setView("buttons")}
+            onClick={() => {
+              setView("buttons");
+              setError("");
+              setName("");
+            }}
             variant="secondary"
             className="buttons"
           >
             Back
           </Button>
 
-          <Button disabled={!name} onClick={() => onStartLobby(name, true)}>
-            Start Lobby
-          </Button>
+          {/* <Button disabled={!name} onClick={() => onStartLobby(name, true)}> */}
+          <Button onClick={handleCreate}>Start Lobby</Button>
         </div>
+
+        {error && <p style={{ color: "red" }}>{error}</p>}
       </div>
     );
   }
@@ -73,7 +101,12 @@ export default function Home({ onStartLobby }: HomeProps) {
 
         <div className="buttons">
           <Button
-            onClick={() => setView("buttons")}
+            onClick={() => {
+              setView("buttons");
+              setError("");
+              setName("");
+              setCode("");
+            }}
             variant="secondary"
             className="back"
           >
@@ -81,12 +114,14 @@ export default function Home({ onStartLobby }: HomeProps) {
           </Button>
 
           <Button
-            disabled={!name || !code}
-            onClick={() => onStartLobby(name, false, code)}
+            // disabled={!name || !code}
+            // onClick={() => onStartLobby(name, false, code)}
+            onClick={handleJoin}
           >
             Join Lobby
           </Button>
         </div>
+        {error && <p style={{ color: "red" }}>{error}</p>}
       </div>
     );
   }

@@ -1,4 +1,4 @@
-import { Player } from "pages/gameWindow";
+import { Player } from "pages/GameWindow";
 import React from "react";
 
 interface EndProps {
