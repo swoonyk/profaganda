@@ -3,7 +3,8 @@ const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
 
-const PORT = process.env.PORT || 3000;
+// Default socket server port set to 4000 to avoid conflict with Next.js dev (3000)
+const PORT = process.env.PORT || 4000;
 // Auto-end timer per round (ms). Set to 0 to disable.
 const ROUND_DURATION_MS = Number(process.env.ROUND_DURATION_MS || 20000);
 

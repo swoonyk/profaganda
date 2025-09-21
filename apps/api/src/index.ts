@@ -15,9 +15,25 @@ app.use(helmet());
 app.use(cors());
 app.use(express.json());
 
-const mongodbUri = process.env.MONGODB_URI;
+let mongodbUri = process.env.MONGODB_URI;
 if (!mongodbUri) {
-  console.error('MONGODB_URI environment variable is required');
+  console.error('MONGODB_URI environment variable is required (see env.example)');
+  process.exit(1);
+}
+
+// Sanitize common mistake: env values copied with surrounding quotes
+mongodbUri = mongodbUri.trim();
+if ((mongodbUri.startsWith('"') && mongodbUri.endsWith('"')) || (mongodbUri.startsWith("'") && mongodbUri.endsWith("'"))) {
+  mongodbUri = mongodbUri.slice(1, -1);
+}
+
+// Basic validation: connection string must start with mongodb:// or mongodb+srv://
+if (!/^mongodb(\+srv)?:\/\//.test(mongodbUri)) {
+  console.error('\nInvalid MONGODB_URI: connection string must start with "mongodb://" or "mongodb+srv://"');
+  console.error('Examples:');
+  console.error('  Local MongoDB: mongodb://localhost:27017/profaganda');
+  console.error('  Atlas:        mongodb+srv://<user>:<password>@cluster0.xxxxx.mongodb.net/profaganda?retryWrites=true&w=majority');
+  console.error('\nIf your password contains special characters, URL-encode them (e.g. @ -> %40)');
   process.exit(1);
 }
 
@@ -26,6 +42,19 @@ let dbQueries: any;
 // Initialize database connection
 (async () => {
   try {
+    // Log masked connection info to aid debugging (password is redacted)
+    try {
+      const connMatch = mongodbUri.match(/^mongodb(\+srv)?:\/\/([^:]+):([^@]+)@([^/]+)\/?([^?]*)/);
+      if (connMatch) {
+        const [, srv, user, , host, dbname] = connMatch;
+        const driver = srv ? 'mongodb+srv' : 'mongodb';
+        console.log(`Connecting to MongoDB -> driver=${driver}, user=${user}, host=${host}, db=${dbname || '(default)'}`);
+      } else {
+        console.log('Connecting to MongoDB -> (could not parse full URI, proceeding)');
+      }
+    } catch (e) {
+      console.log('Connecting to MongoDB -> (failed to parse URI for logging)');
+    }
     const db = await connectToMongoDB(mongodbUri);
     dbQueries = createDatabaseQueries(db);
     console.log('✅ Database connected and ready');

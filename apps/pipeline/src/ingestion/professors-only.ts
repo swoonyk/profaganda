@@ -17,8 +17,15 @@ function loadConfig(): PipelineConfig {
   }
 
   return {
-    geminiApiKey: process.env.GEMINI_API_KEY || 'not-needed-for-professors-only',
-    mongodbUri: process.env.MONGODB_URI!,
+    geminiApiKey: process.env.GEMINI_API_KEY!,
+    mongodbUri: ((): string => {
+      let uri = process.env.MONGODB_URI!;
+      uri = uri.trim();
+      if ((uri.startsWith('"') && uri.endsWith('"')) || (uri.startsWith("'") && uri.endsWith("'"))) {
+        uri = uri.slice(1, -1);
+      }
+      return uri;
+    })(),
     batchSize: parseInt(process.env.BATCH_SIZE || '5'),
     school: process.env.SCHOOL || 'Cornell University',
     minReviewLength: parseInt(process.env.MIN_REVIEW_LENGTH || '30'),

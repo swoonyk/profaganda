@@ -57,9 +57,13 @@ export async function dropCollections(db: Db): Promise<void> {
 
 // CLI script for running migrations
 export async function runMigrationsCLI(): Promise<void> {
-  const mongodbUri = process.env.MONGODB_URI;
+  let mongodbUri = process.env.MONGODB_URI;
   if (!mongodbUri) {
     throw new Error('MONGODB_URI environment variable is required');
+  }
+  mongodbUri = mongodbUri.trim();
+  if ((mongodbUri.startsWith('"') && mongodbUri.endsWith('"')) || (mongodbUri.startsWith("'") && mongodbUri.endsWith("'"))) {
+    mongodbUri = mongodbUri.slice(1, -1);
   }
 
   try {
