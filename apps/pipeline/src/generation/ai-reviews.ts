@@ -139,16 +139,8 @@ export class AIReviewGenerator {
     try {
       console.log(`Generating AI reviews for professor ${professor.internal_code}...`);
       
-      // Determine department from professor internal code or use a default
-      // For now, we'll extract from the existing mock data pattern
-      const departmentMap: Record<string, string> = {
-        'prof_001': 'Computer Science',
-        'prof_002': 'Mathematics', 
-        'prof_003': 'Biology',
-        'prof_004': 'Physics'
-      };
-      
-      const department = departmentMap[professor.internal_code] || 'Computer Science';
+      // Determine department from professor data or use a default
+      const department = professor.department || 'Computer Science';
       const template = this.getRandomTemplate(department);
       
       const reviewRequests = this.generateReviewVariations(professor, template);

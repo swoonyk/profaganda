@@ -1,5 +1,5 @@
 import type { RawReview, RawProfessor } from '@profaganda/shared';
-import { RMPFetcher } from './rmp-fetcher.js';
+import { RMPDatabaseClient } from './rmp-database-client.js';
 import { CUReviewsFetcher } from './cureviews-fetcher.js';
 import { normalizeReview, isReviewUsable } from './review-utils.js';
 
@@ -32,9 +32,9 @@ export async function fetchRealReviews(config: FetchConfig = {}): Promise<{ revi
   // Fetch from RateMyProfessor
   if (enableRMP) {
     try {
-      console.log('🔍 Fetching data from RateMyProfessor...');
-      const rmpFetcher = new RMPFetcher();
-      const rmpData = await rmpFetcher.fetchAllData(schoolName, maxProfessorsPerSource, maxReviewsPerProfessor);
+      console.log('🔍 Fetching data from RateMyProfessor (comprehensive database client)...');
+      const rmpClient = new RMPDatabaseClient();
+      const rmpData = await rmpClient.fetchCornellData(maxProfessorsPerSource, maxReviewsPerProfessor);
       
       allProfessors.push(...rmpData.professors);
       allReviews.push(...rmpData.reviews);

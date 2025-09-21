@@ -6,7 +6,7 @@
  */
 
 import { fetchRealReviews, fetchConfigs } from './real-data.js';
-import { RMPFetcher } from './rmp-fetcher.js';
+import { RMPDatabaseClient } from './rmp-database-client.js';
 import { CUReviewsFetcher } from './cureviews-fetcher.js';
 
 async function testFullPipeline() {
@@ -16,23 +16,19 @@ async function testFullPipeline() {
   console.log('🔧 Test 1: Individual Component Testing');
   
   try {
-    // Test RMP fetcher
-    console.log('\n📍 Testing RateMyProfessor integration...');
-    const rmpFetcher = new RMPFetcher();
-    const schoolId = await rmpFetcher.getSchoolId('Cornell University');
+    // Test RMP database client
+    console.log('\n📍 Testing RateMyProfessor database client...');
+    const rmpClient = new RMPDatabaseClient();
+    const schoolId = await rmpClient.getCornellSchoolId();
     
-    if (schoolId) {
-      console.log(`✅ RMP: Found Cornell University (ID: ${schoolId})`);
-      
-      const rmpProfs = await rmpFetcher.fetchProfessorsFromSchool('Cornell University', 2);
-      console.log(`✅ RMP: Found ${rmpProfs.length} professors`);
-      
-      if (rmpProfs.length > 0 && rmpProfs[0].metadata?.rmpId) {
-        const reviews = await rmpFetcher.fetchReviewsForProfessor(rmpProfs[0], 2);
-        console.log(`✅ RMP: Found ${reviews.length} reviews for ${rmpProfs[0].name}`);
-      }
-    } else {
-      console.log('⚠️  RMP: Could not connect to RateMyProfessor');
+    console.log(`✅ RMP: Cornell University ID: ${schoolId}`);
+    
+    const rmpData = await rmpClient.fetchCornellData(3, 5); // 3 professors, 5 reviews each max
+    console.log(`✅ RMP: Found ${rmpData.professors.length} professors, ${rmpData.reviews.length} reviews`);
+    
+    if (rmpData.professors.length > 0) {
+      const sample = rmpData.professors[0];
+      console.log(`✅ RMP: Sample professor: ${sample.name} (${sample.department})`);
     }
 
     // Test CUReviews fetcher

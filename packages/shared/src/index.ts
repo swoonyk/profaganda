@@ -1,2 +1,2 @@
-export * from './types/index.js';
-export * from './gemini.js';
+export * from './types/index';
+export * from './gemini';

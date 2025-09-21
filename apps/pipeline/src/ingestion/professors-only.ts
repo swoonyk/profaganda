@@ -1,15 +1,15 @@
 import { config } from 'dotenv';
 import { connectToMongoDB, runMigrations, closeConnection } from '@profaganda/database';
 import type { PipelineConfig } from '@profaganda/shared';
-import { RMPFetcher } from './rmp-fetcher.js';
+import { RMPDatabaseClient } from './rmp-database-client.js';
 import { CUReviewsFetcher } from './cureviews-fetcher.js';
 import { SanitizationProcessor } from '../sanitization/processor.js';
 
 // Load environment variables from .env file
-config({ path: '../../../.env' });
+config({ path: '../../.env' });
 
 function loadConfig(): PipelineConfig {
-  const requiredEnvVars = ['GEMINI_API_KEY', 'MONGODB_URI'];
+  const requiredEnvVars = ['MONGODB_URI'];
   
   for (const envVar of requiredEnvVars) {
     if (!process.env[envVar]) {
@@ -18,7 +18,7 @@ function loadConfig(): PipelineConfig {
   }
 
   return {
-    geminiApiKey: process.env.GEMINI_API_KEY!,
+    geminiApiKey: process.env.GEMINI_API_KEY || 'not-needed-for-professors-only',
     mongodbUri: process.env.MONGODB_URI!,
     batchSize: parseInt(process.env.BATCH_SIZE || '5'),
     school: process.env.SCHOOL || 'Cornell University',
@@ -50,10 +50,11 @@ async function ingestProfessorsOnly() {
     console.log(`📈 Initial stats: ${initialStats.professors} professors, ${initialStats.reviews} reviews`);
     
     // Fetch professors from RateMyProfessor
-    console.log('\n🔍 Fetching professors from RateMyProfessor...');
-    const rmpFetcher = new RMPFetcher();
-    const maxProfessors = process.env.NODE_ENV === 'production' ? 50 : 15;
-    const rmpProfessors = await rmpFetcher.fetchProfessorsFromSchool(config.school, maxProfessors);
+    console.log('\n🔍 Fetching professors from RateMyProfessor (comprehensive database)...');
+    const rmpClient = new RMPDatabaseClient();
+    const maxProfessors = process.env.NODE_ENV === 'production' ? 100 : 25;
+    const rmpData = await rmpClient.fetchCornellData(maxProfessors, 0); // 0 reviews since this is professors-only
+    const rmpProfessors = rmpData.professors;
     
     // Fetch professors from CUReviews (without their reviews for now)
     console.log('\n🔍 Fetching professors from CUReviews...');

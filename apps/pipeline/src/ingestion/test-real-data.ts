@@ -1,14 +1,14 @@
 #!/usr/bin/env node
 
 /**
- * Test script for the new real data fetching implementation
- * This script can be run independently to test data fetching without running the full pipeline
+ * Test script for real data fetching implementation
+ * This script tests the production data pipeline components
  */
 
 import { fetchReviewsWithConfig } from './real-data.js';
 
 async function testRealDataFetching() {
-  console.log('🧪 Testing real data fetching implementation...\n');
+  console.log('🧪 Testing production data pipeline...\n');
 
   try {
     // Test with development config (small dataset)
@@ -54,13 +54,13 @@ async function testRealDataFetching() {
       console.log('   4. The unofficial API might be temporarily unavailable');
       console.log('\n💡 The system will fall back to limited sample data in such cases.');
     } else {
-      console.log('\n✅ Real data fetching is working! The system will now fetch real professors and reviews.');
+      console.log('\n✅ Production data pipeline is working! The system fetches real professors and reviews.');
     }
 
   } catch (error) {
     console.error('\n❌ Error during testing:', error);
-    console.log('\n💡 This is expected if you don\'t have network access or if the external APIs are unavailable.');
-    console.log('   The system includes fallback mechanisms to handle such cases.');
+      console.log('\n💡 This is expected if you don\'t have network access or if the external APIs are unavailable.');
+      console.log('   Check your network connection and API availability.');
   }
 }
 

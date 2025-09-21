@@ -96,10 +96,11 @@ Once running, access your applications at:
 - **Features**: REST API for professors and reviews
 
 ### Pipeline (`apps/pipeline`)
-- **Purpose**: AI-powered review sanitization
-- **AI**: Google Gemini for PII removal
-- **Sources**: Rate My Professor, CUReviews
-- **Features**: Batch processing, safety validation
+- **Purpose**: Production data ingestion and AI-powered review sanitization
+- **Data Sources**: RateMyProfessor API, CUReviews API (real-time)
+- **AI**: Google Gemini for PII removal and text sanitization
+- **Features**: Real professor data, batch processing, safety validation
+- **Scale**: Handles 100+ professors and 1000+ reviews
 
 ## Packages
 
@@ -126,8 +127,19 @@ pnpm api:dev           # Start API server only (port 3001)
 
 ### Pipeline Operations
 ```bash
-pnpm pipeline:ingest   # Run review ingestion and sanitization
-pnpm pipeline:stats    # Show database statistics
+# Core Pipeline
+pnpm pipeline:ingest              # Full pipeline: professors + reviews + sanitization
+pnpm pipeline:ingest-professors   # Ingest real professors from RMP & CUReviews
+pnpm pipeline:ingest-reviews      # Ingest reviews for existing professors
+pnpm pipeline:stats               # Show database statistics
+
+# Testing & Validation
+pnpm pipeline:test                # Test production data pipeline
+pnpm pipeline:test-rmp            # Test RateMyProfessor integration
+pnpm pipeline:test-full           # Comprehensive pipeline validation
+
+# AI Generation
+pnpm pipeline:generate            # Generate AI reviews for professors
 ```
 
 ### Database Operations

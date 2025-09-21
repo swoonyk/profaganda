@@ -97,3 +97,16 @@ export interface ProfessorReviewsResponse {
   reviews: Review[];
   professor: Professor;
 }
+
+// Game API response types
+export interface GameMode1Response {
+  review: Review;
+  professorOptions: Professor[];
+  correctProfessorId: string;
+}
+
+export interface GameMode2Response {
+  professor: Professor;
+  review: Review;
+  isRealReview: boolean;
+}

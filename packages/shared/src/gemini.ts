@@ -5,7 +5,7 @@ import type {
   SanitizationResult,
   GenerateReviewRequest,
   GenerateReviewResponse
-} from './types/index.js';
+} from './types/index';
 
 const SANITIZATION_PROMPT = `You are a data sanitization system for a hackathon game.
 

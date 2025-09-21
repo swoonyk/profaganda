@@ -4,79 +4,81 @@
  * Test script specifically for RateMyProfessor API integration
  */
 
-import { RMPFetcher } from './rmp-fetcher.js';
+import { RMPDatabaseClient } from './rmp-database-client.js';
 
-async function testRMPFetcher() {
-  console.log('🧪 Testing RateMyProfessor API integration...\n');
+async function testRMPDatabaseClient() {
+  console.log('🧪 Testing RateMyProfessor Database Client (comprehensive)...\n');
 
-  const rmpFetcher = new RMPFetcher();
+  const rmpClient = new RMPDatabaseClient();
 
   try {
-    // Test 1: School search
-    console.log('📍 Test 1: School Search');
-    const schoolId = await rmpFetcher.getSchoolId('Cornell University');
-    if (schoolId) {
-      console.log(`✅ Found Cornell University with ID: ${schoolId}`);
-    } else {
-      console.log('❌ Could not find Cornell University');
-      return;
-    }
+    // Test 1: School ID lookup
+    console.log('📍 Test 1: Cornell School ID');
+    const schoolId = await rmpClient.getCornellSchoolId();
+    console.log(`✅ Cornell University School ID: ${schoolId}`);
 
-    // Test 2: Fetch a few professors
-    console.log('\n👨‍🏫 Test 2: Professor Fetching (limited)');
-    const professors = await rmpFetcher.fetchProfessorsFromSchool('Cornell University', 3);
+    // Test 2: Fetch professors from Cornell (limited for testing)
+    console.log('\n👨‍🏫 Test 2: Professor Fetching (first 5 professors)');
+    const allProfessors = await rmpClient.fetchAllProfessorsFromSchool(schoolId);
     
-    if (professors.length > 0) {
-      console.log(`✅ Found ${professors.length} professors:`);
-      professors.forEach((prof, index) => {
-        console.log(`   ${index + 1}. ${prof.name} (${prof.department})`);
-        console.log(`      Source: ${prof.source}, RMP ID: ${prof.metadata?.rmpId}`);
+    if (allProfessors.length > 0) {
+      console.log(`✅ Found ${allProfessors.length} total professors from Cornell`);
+      
+      // Show first 5 professors
+      const topProfessors = allProfessors.slice(0, 5);
+      topProfessors.forEach((prof, index) => {
+        console.log(`   ${index + 1}. ${prof.firstName} ${prof.lastName} (${prof.department})`);
+        console.log(`      Ratings: ${prof.numRatings}, Avg: ${prof.avgRating}/5, Difficulty: ${prof.avgDifficulty}/5`);
       });
 
-      // Test 3: Fetch reviews for first professor
-      if (professors[0]) {
-        console.log('\n📝 Test 3: Review Fetching');
-        console.log(`Fetching reviews for: ${professors[0].name}`);
+      // Test 3: Fetch detailed reviews for a professor with ratings
+      const professorWithRatings = allProfessors.find(p => p.numRatings > 5);
+      if (professorWithRatings) {
+        console.log(`\n📝 Test 3: Review Fetching for ${professorWithRatings.firstName} ${professorWithRatings.lastName}`);
+        console.log(`   Professor has ${professorWithRatings.numRatings} ratings`);
         
-        const reviews = await rmpFetcher.fetchReviewsForProfessor(professors[0], 3);
+        const detailed = await rmpClient.fetchProfessorDetails(professorWithRatings.id);
         
-        if (reviews.length > 0) {
-          console.log(`✅ Found ${reviews.length} reviews:`);
-          reviews.forEach((review, index) => {
-            console.log(`   ${index + 1}. Rating: ${review.rating}/5`);
-            console.log(`      Text: "${review.text.substring(0, 100)}..."`);
+        if (detailed && detailed.ratings.length > 0) {
+          console.log(`✅ Found ${detailed.ratings.length} detailed reviews:`);
+          detailed.ratings.slice(0, 3).forEach((review, index) => {
+            console.log(`   ${index + 1}. Rating: ${Math.round((review.clarityRating + review.helpfulRating) / 2)}/5`);
+            console.log(`      Text: "${review.comment.substring(0, 100)}..."`);
+            console.log(`      Class: ${review.class}, Date: ${review.date}`);
           });
         } else {
-          console.log('⚠️  No reviews found for this professor');
+          console.log('⚠️  No detailed reviews found');
         }
+      } else {
+        console.log('\n⚠️  No professors with ratings found for detailed testing');
       }
+
+      // Test 4: Test data conversion
+      console.log('\n🔄 Test 4: Data Conversion');
+      const sampleProf = topProfessors[0];
+      const rawProfessor = rmpClient.convertToRawProfessor(sampleProf);
+      console.log(`✅ Converted professor: ${rawProfessor.name} (${rawProfessor.department})`);
+      console.log(`   Source: ${rawProfessor.source}, ID: ${rawProfessor.id}`);
 
     } else {
       console.log('❌ No professors found');
     }
 
-    console.log('\n✅ RMP API testing completed successfully!');
-    console.log('💡 The RateMyProfessor integration is working and ready for production use.');
+    console.log('\n✅ RMP Database Client testing completed successfully!');
+    console.log('💡 The comprehensive RateMyProfessor integration is working and ready for production use.');
+    console.log('📊 This client can fetch ALL professors and reviews from Cornell with detailed metadata.');
 
   } catch (error) {
-    console.error('\n❌ RMP API testing failed:', error);
-    
-    if (error.message?.includes('Property \'getRatings\' does not exist')) {
-      console.log('\n💡 The ratemyprofessor-api package might have different method names.');
-      console.log('   Check the package documentation for the correct API methods.');
-    } else if (error.message?.includes('network') || error.message?.includes('timeout')) {
-      console.log('\n💡 This might be a network connectivity issue or rate limiting.');
-      console.log('   Try again in a few minutes.');
-    } else {
-      console.log('\n💡 This could be due to:');
-      console.log('   1. Changes in the RateMyProfessor API structure');
-      console.log('   2. Rate limiting or blocked requests');
-      console.log('   3. The unofficial API package needs updating');
-    }
+    console.error('\n❌ RMP Database Client testing failed:', error);
+    console.log('\n💡 This could be due to:');
+    console.log('   1. Network connectivity issues');
+    console.log('   2. Rate limiting from RateMyProfessor');
+    console.log('   3. Changes in the RateMyProfessor GraphQL API');
+    console.log('   4. Temporary service unavailability');
   }
 }
 
 // Run the test if this file is executed directly
 if (import.meta.url === `file://${process.argv[1]}`) {
-  testRMPFetcher();
+  testRMPDatabaseClient();
 }

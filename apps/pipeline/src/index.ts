@@ -1,7 +1,7 @@
 import { config } from 'dotenv';
 import { connectToMongoDB, runMigrations, closeConnection } from '@profaganda/database';
 import type { PipelineConfig } from '@profaganda/shared';
-import { fetchReviewsWithConfig } from './ingestion/real-data.js';
+import { fetchRealReviews, fetchConfigs } from './ingestion/real-data.js';
 import { SanitizationProcessor } from './sanitization/processor.js';
 import { generateAIReviews } from './generation/ai-reviews.js';
 
@@ -48,7 +48,7 @@ async function main() {
     
     console.log('📥 Fetching reviews from real sources...');
     const fetchConfig = process.env.NODE_ENV === 'production' ? 'production' : 'development';
-    const { reviews, professors } = await fetchReviewsWithConfig(fetchConfig);
+    const { reviews, professors } = await fetchRealReviews(fetchConfigs[fetchConfig]);
     console.log(`✅ Fetched ${reviews.length} reviews from ${professors.length} professors`);
     
     const validReviews = reviews.filter(review => 

@@ -1,13 +1,13 @@
 import { config } from 'dotenv';
 import { connectToMongoDB, runMigrations, closeConnection } from '@profaganda/database';
 import type { PipelineConfig } from '@profaganda/shared';
-import { RMPFetcher } from './rmp-fetcher.js';
+import { RMPDatabaseClient } from './rmp-database-client.js';
 import { CUReviewsFetcher } from './cureviews-fetcher.js';
 import { SanitizationProcessor } from '../sanitization/processor.js';
 import { normalizeReview, isReviewUsable } from './review-utils.js';
 
 // Load environment variables from .env file
-config({ path: '../../../.env' });
+config({ path: '../../.env' });
 
 function loadConfig(): PipelineConfig {
   const requiredEnvVars = ['GEMINI_API_KEY', 'MONGODB_URI'];
@@ -69,30 +69,31 @@ async function ingestReviewsOnly() {
     const rmpProfessors = existingProfessors.filter(p => p.source === 'rmp');
     if (rmpProfessors.length > 0) {
       console.log(`\n🔍 Fetching reviews for ${rmpProfessors.length} RateMyProfessor professors...`);
-      const rmpFetcher = new RMPFetcher();
-      const maxReviewsPerProfessor = process.env.NODE_ENV === 'production' ? 20 : 10;
+      const rmpClient = new RMPDatabaseClient();
+      const maxReviewsPerProfessor = process.env.NODE_ENV === 'production' ? 50 : 20;
       
       for (const professor of rmpProfessors) {
         try {
-          const professorData = {
-            id: professor.internal_code,
-            name: professor.name,
-            school: professor.school,
-            department: professor.department,
-            source: professor.source as 'rmp',
-            metadata: { rmpId: professor.internal_code.split('_')[1] } // Extract RMP ID from internal code
-          };
+          // Extract RMP ID from internal code (format: rmp_<id>)
+          const rmpId = professor.internal_code.replace('rmp_', '');
           
-          const reviews = await rmpFetcher.fetchReviewsForProfessor(professorData, maxReviewsPerProfessor);
+          console.log(`  📝 Fetching reviews for ${professor.name} (RMP ID: ${rmpId})`);
+          const detailed = await rmpClient.fetchProfessorDetails(rmpId);
           
-          // Update reviews to reference the correct professor ID
-          const updatedReviews = reviews.map(review => ({
-            ...review,
-            professorId: professor._id.toString()
-          }));
-          
-          allReviews.push(...updatedReviews);
-          console.log(`  ✅ Found ${reviews.length} reviews for ${professor.name}`);
+          if (detailed && detailed.ratings.length > 0) {
+            const reviews = rmpClient.convertToRawReviews(professor._id.toString(), detailed.ratings.slice(0, maxReviewsPerProfessor));
+            
+            // Update reviews to reference the correct professor ID
+            const updatedReviews = reviews.map(review => ({
+              ...review,
+              professorId: professor._id.toString()
+            }));
+            
+            allReviews.push(...updatedReviews);
+            console.log(`  ✅ Found ${reviews.length} reviews for ${professor.name}`);
+          } else {
+            console.log(`  ⚠️  No reviews found for ${professor.name}`);
+          }
           
           // Add delay to be respectful
           await new Promise(resolve => setTimeout(resolve, 2000));

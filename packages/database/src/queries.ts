@@ -51,7 +51,7 @@ export class DatabaseQueries {
 
   async findProfessorById(id: string): Promise<Professor | null> {
     try {
-      const professor = await this.professorsCollection.findOne({ _id: new ObjectId(id) });
+      const professor = await this.professorsCollection.findOne({ _id: new ObjectId(id) } as any);
       if (!professor) return null;
       
       return {
@@ -97,7 +97,7 @@ export class DatabaseQueries {
     return reviews.map(review => ({
       ...review,
       _id: review._id?.toString(),
-    }));
+    })) as Review[];
   }
 
   async getReviewsByProfessorId(professorId: string): Promise<Review[]> {
@@ -118,6 +118,115 @@ export class DatabaseQueries {
 
   async getProfessorCount(): Promise<number> {
     return await this.professorsCollection.countDocuments();
+  }
+
+  // Game-specific queries
+  async getProfessorsByDepartment(department: string, limit?: number): Promise<Professor[]> {
+    const query = department ? { department } : {};
+    const cursor = this.professorsCollection.find(query);
+    
+    if (limit) {
+      cursor.limit(limit);
+    }
+    
+    const professors = await cursor.toArray();
+    
+    return professors.map(professor => ({
+      ...professor,
+      _id: professor._id?.toString(),
+    }));
+  }
+
+  async getRandomProfessorWithReviews(): Promise<{professor: Professor, reviews: Review[]} | null> {
+    // Get a random professor who has reviews
+    const professorsWithReviews = await this.professorsCollection.aggregate([
+      {
+        $lookup: {
+          from: 'reviews',
+          localField: '_id',
+          foreignField: 'professor_id',
+          as: 'reviews'
+        }
+      },
+      {
+        $match: {
+          'reviews.0': { $exists: true } // Only professors with at least one review
+        }
+      },
+      { $sample: { size: 1 } }
+    ]).toArray();
+
+    if (professorsWithReviews.length === 0) {
+      return null;
+    }
+
+    const professorData = professorsWithReviews[0];
+    const professor: Professor = {
+      ...professorData,
+      _id: professorData._id?.toString(),
+    } as Professor;
+
+    // Get all reviews for this professor
+    const reviews = await this.getReviewsByProfessorId(professor._id!);
+
+    return { professor, reviews };
+  }
+
+  async getProfessorsExcluding(excludeIds: string[], department?: string, limit: number = 10): Promise<Professor[]> {
+    const query: any = {
+      _id: { $nin: excludeIds.map(id => new ObjectId(id)) }
+    };
+    
+    if (department) {
+      query.department = department;
+    }
+
+    const professors = await this.professorsCollection
+      .find(query)
+      .limit(limit)
+      .toArray();
+    
+    return professors.map(professor => ({
+      ...professor,
+      _id: professor._id?.toString(),
+    }));
+  }
+
+  async getRandomReviewWithProfessor(): Promise<{review: Review, professor: Professor} | null> {
+    // Get a random review with its associated professor
+    const reviewsWithProfessor = await this.reviewsCollection.aggregate([
+      { $sample: { size: 1 } },
+      {
+        $lookup: {
+          from: 'professors',
+          localField: 'professor_id',
+          foreignField: '_id',
+          as: 'professor'
+        }
+      },
+      {
+        $match: {
+          'professor.0': { $exists: true } // Ensure professor exists
+        }
+      }
+    ]).toArray();
+
+    if (reviewsWithProfessor.length === 0) {
+      return null;
+    }
+
+    const data = reviewsWithProfessor[0];
+    const review: Review = {
+      ...data,
+      _id: data._id?.toString(),
+    } as Review;
+
+    const professor: Professor = {
+      ...data.professor[0],
+      _id: data.professor[0]._id?.toString(),
+    } as Professor;
+
+    return { review, professor };
   }
 
   // Index creation for performance

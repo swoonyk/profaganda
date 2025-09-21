@@ -9,7 +9,7 @@
     "start": "tsx src/index.ts",
     "clean": "rm -rf dist",
     "type-check": "tsc --noEmit",
-    "test-real-data": "tsx src/ingestion/test-real-data.ts",
+    "test-pipeline": "tsx src/ingestion/test-real-data.ts",
     "test-rmp": "tsx src/ingestion/test-rmp-only.ts",
     "test-full-pipeline": "tsx src/ingestion/test-full-pipeline.ts",
     "ingest-professors": "tsx src/ingestion/professors-only.ts",
@@ -23,8 +23,7 @@
     "cheerio": "^1.1.2",
     "dotenv": "^17.2.2",
     "mongodb": "^6.3.0",
-    "node-fetch": "^3.3.2",
-    "ratemyprofessor-api": "^1.0.1"
+    "node-fetch": "^3.3.2"
   },
   "devDependencies": {
     "tsx": "^4.7.0",
