@@ -58,7 +58,7 @@ export default function SocketTest() {
 
   const fetchProfessors = async () => {
     try {
-      const res = await fetch('http://localhost:3001/professors');
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/professors`);
       const json = await res.json();
       setEvents(e => [`/professors returned ${json.professors?.length ?? 0} items`, ...e].slice(0,50));
     } catch (err: any) {

@@ -37,14 +37,14 @@ export function useGameActions() {
       try {
         if (mode === "A") {
           const response = await fetch(
-            "http://localhost:4000/game/mode1/question"
+            `${process.env.NEXT_PUBLIC_API_URL || ''}/game/mode1/question`
           );
           gameData = await response.json();
           correctAnswer = gameData.correctProfessorId;
           options = gameData.professorOptions.map((p: any) => p._id);
         } else {
           const response = await fetch(
-            "http://localhost:4000/game/mode2/question"
+            `${process.env.NEXT_PUBLIC_API_URL || ''}/game/mode2/question`
           );
           gameData = await response.json();
           correctAnswer = gameData.isRealReview; // true if real, false if AI

@@ -1,10 +1,11 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  experimental: {
-    typedRoutes: true,
+  typedRoutes: true,
+  env: {
+    // API URL for game endpoints - configure this based on your deployment
+    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || '',
   },
-  transpilePackages: ['@profaganda/shared'],
 };
 
 export default nextConfig;
