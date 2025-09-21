@@ -36,14 +36,21 @@ export default function Home({ onStartLobby }: HomeProps) {
   // render the splash buttons
   if (view === "buttons") {
     return (
-      <main>
+      <main className="start">
         <div className="panel">
-          <h1>Profaganda!</h1>
-          <p>Race your friends to guess the right professor!</p>
-          <Button onClick={() => setView("create")}>Create Game</Button>
-          <Button onClick={() => setView("join")} variant="secondary">
-            Join Game
-          </Button>
+          <div className="top">
+            <h1>Profaganda!</h1>
+            <p>Race your friends to guess the right professor!</p>
+          </div>
+
+          <div className="inner">
+            <div className="buttons">
+              <Button onClick={() => setView("create")}>Create Game</Button>
+              <Button onClick={() => setView("join")} variant="secondary">
+                Join Game
+              </Button>
+            </div>
+          </div>
         </div>
       </main>
     );
@@ -52,79 +59,88 @@ export default function Home({ onStartLobby }: HomeProps) {
   // render the create form
   if (view === "create") {
     return (
-      <div className="start">
-        <h2>Create Game</h2>
-        <input
-          type="text"
-          placeholder="Enter your name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-        />
+      <main>
+        <div className="panel">
+          <div className="inner">
+            <h2>Create Game</h2>
+            <input
+              type="text"
+              placeholder="Enter your name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
 
-        <div className="buttons">
-          <Button
-            onClick={() => {
-              setView("buttons");
-              setError("");
-              setName("");
-            }}
-            variant="secondary"
-            className="back"
-          >
-            Back
-          </Button>
+            <div className="buttons">
+              <Button onClick={handleCreate}>Start Lobby</Button>
 
-          {/* <Button disabled={!name} onClick={() => onStartLobby(name, true)}> */}
-          <Button onClick={handleCreate}>Start Lobby</Button>
+              <Button
+                onClick={() => {
+                  setView("buttons");
+                  setError("");
+                  setName("");
+                }}
+                variant="secondary"
+                className="back"
+              >
+                Back
+              </Button>
+
+              {/* <Button disabled={!name} onClick={() => onStartLobby(name, true)}> */}
+            </div>
+
+            {error && <p className="error-text">{error}</p>}
+          </div>
         </div>
-
-        {error && <p className="error-text">{error}</p>}
-      </div>
+      </main>
     );
   }
 
   // render the join form
   if (view === "join") {
     return (
-      <div className="start">
-        <h2>Join Game</h2>
-        <input
-          type="text"
-          placeholder="Enter your name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-        />
-        <input
-          type="text"
-          placeholder="Enter game code"
-          value={code}
-          onChange={(e) => setCode(e.target.value)}
-        />
+      <main>
+        <div className="panel">
+          <div className="inner">
+            <h2>Join Game</h2>
+            <input
+              type="text"
+              placeholder="Enter your name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
+            <input
+              type="text"
+              placeholder="Enter game code"
+              value={code}
+              onChange={(e) => setCode(e.target.value)}
+            />
 
-        <div className="buttons">
-          <Button
-            onClick={() => {
-              setView("buttons");
-              setError("");
-              setName("");
-              setCode("");
-            }}
-            variant="secondary"
-            className="back"
-          >
-            Back
-          </Button>
+            <div className="buttons">
+              <Button
+                // disabled={!name || !code}
+                // onClick={() => onStartLobby(name, false, code)}
+                onClick={handleJoin}
+              >
+                Join Lobby
+              </Button>
 
-          <Button
-            // disabled={!name || !code}
-            // onClick={() => onStartLobby(name, false, code)}
-            onClick={handleJoin}
-          >
-            Join Lobby
-          </Button>
+              <Button
+                onClick={() => {
+                  setView("buttons");
+                  setError("");
+                  setName("");
+                  setCode("");
+                }}
+                variant="secondary"
+                className="back"
+              >
+                Back
+              </Button>
+            </div>
+            {error && <p className="error-text">{error}</p>}
+          </div>
         </div>
-        {error && <p className="error-text">{error}</p>}
-      </div>
+      </main>
     );
   }
 

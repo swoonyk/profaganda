@@ -15,9 +15,8 @@ const baseStyle: React.CSSProperties = {
   cursor: "pointer",
   transition: "120ms ease-out",
   display: "inline-block",
-  height: "61px",
-  width: "300px",
-  fontSize: "24px",
+  height: "50px",
+  fontSize: "20px",
 };
 
 const activeStyles: Record<ButtonVariant, React.CSSProperties> = {

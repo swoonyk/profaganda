@@ -38,9 +38,16 @@ h2 {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 24px;
+  gap: 32px;
   align-items: center;
   width: 800px;
+}
+
+.panel .inner {
+  width: 400px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
 }
 
 main h1 {
@@ -57,8 +64,8 @@ main p {
 
 .buttons {
   display: flex;
+  flex-direction: column;
   gap: 24px;
-  width: 100%;
 }
 
 .leaderboard {
@@ -91,22 +98,11 @@ main p {
   align-items: center;
 }
 
-.start {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-  width: 632px;
-  padding: 64px;
-  background: rgba(255 255 255 / 10%);
-  border: 6px solid rgba(255 255 255 / 15%);
-  border-radius: 16px;
-}
-
 input {
   background: rgba(255 255 255 / 20%);
   border: 2px solid rgba(255 255 255 / 50%);
   border-radius: 8px;
-  font-size: 24px;
+  font-size: 20px;
   color: #fff;
   height: 61px;
   padding: 16px;
@@ -213,4 +209,13 @@ button:disabled {
   flex-direction: column;
   width: 100%;
   gap: 12px;
+}
+
+.start .panel .top {
+  display: flex;
+  flex-direction: column;
+}
+
+.inner h2 {
+  text-align: center;
 }
