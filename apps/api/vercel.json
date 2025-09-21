@@ -1,0 +1,43 @@
+{
+  "installCommand": "pnpm install",
+  "buildCommand": null,
+  "functions": {
+    "api/**/*.ts": {
+      "runtime": "@vercel/node@3.1.0"
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/health",
+      "destination": "/api/health"
+    },
+    {
+      "source": "/reviews/random",
+      "destination": "/api/reviews/random"
+    },
+    {
+      "source": "/reviews/by-professor/:id",
+      "destination": "/api/reviews/by-professor/:id"
+    },
+    {
+      "source": "/professors",
+      "destination": "/api/professors"
+    },
+    {
+      "source": "/professors/top-rated",
+      "destination": "/api/professors/top-rated"
+    },
+    {
+      "source": "/game/mode1/question",
+      "destination": "/api/game/mode1/question"
+    },
+    {
+      "source": "/game/mode2/question",
+      "destination": "/api/game/mode2/question"
+    },
+    {
+      "source": "/stats",
+      "destination": "/api/stats"
+    }
+  ]
+}

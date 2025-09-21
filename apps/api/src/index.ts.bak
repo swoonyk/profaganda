@@ -1,3 +1,7 @@
+// DEPRECATED: This Express server has been replaced with Vercel serverless functions
+// The individual endpoints have been split into separate files in the /api directory
+// This file is kept for reference and can be removed once Vercel deployment is confirmed working
+
 import { config } from 'dotenv';
 import express from 'express';
 import cors from 'cors';
