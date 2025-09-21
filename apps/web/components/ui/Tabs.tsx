@@ -3,10 +3,11 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 interface TabsProps {
   tabs: string[];
   onTabChange?: (index: number) => void;
+  activeTab?: number;
 }
 
-export default function Tabs({ tabs, onTabChange }: TabsProps) {
-  const [active, setActive] = useState(0);
+export default function Tabs({ tabs, onTabChange, activeTab }: TabsProps) {
+  const [active, setActive] = useState(activeTab ?? 0);
   const containerRef = useRef<HTMLDivElement>(null);
 
   const handleClick = (i: number) => {
@@ -30,6 +31,12 @@ export default function Tabs({ tabs, onTabChange }: TabsProps) {
       });
     }
   }, [tabs.length, onTabChange]);
+
+  useEffect(() => {
+    if (activeTab !== undefined) {
+      setActive(activeTab);
+    }
+  }, [activeTab]);
 
   useEffect(() => {
     const node = containerRef.current;

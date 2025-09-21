@@ -33,7 +33,7 @@ export default function GameWindow({ muted, toggleMute }: GameWindowProps) {
   useEffect(() => setIsClient(true), []);
   // const forcedPhase = "round";
 
-  const handleStartLobby = (name: string, isHost: boolean, code?: string) => {
+  const handleStartLobby = (name: string, isHost: boolean, code?: string, mode?: "A" | "B") => {
     // Create a temporary playerId for optimistic UI
     const tempPlayerId = "temp_" + Math.random().toString(36).substr(2, 9);
 
@@ -41,6 +41,7 @@ export default function GameWindow({ muted, toggleMute }: GameWindowProps) {
     setGameState((prev) => ({
       ...prev,
       phase: "lobby",
+      gameMode: mode || "A", // Store the selected mode
       players: [
         { name, points: 0, yourself: true, isHost, playerId: tempPlayerId },
       ],

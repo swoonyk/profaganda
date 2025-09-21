@@ -46,7 +46,10 @@ export function useGameState() {
     socket.on(
       "connected",
       ({ playerId, partyId }: { playerId: string; partyId: string }) => {
-        setGameState((prev) => ({ ...prev, playerId, partyId }));
+        setGameState((prev) => {
+          console.log("Connected - preserving gameMode:", prev.gameMode);
+          return { ...prev, playerId, partyId };
+        });
       }
     );
 

@@ -4,7 +4,7 @@ import MuteButton from "components/MuteButton";
 import Tabs from "components/ui/Tabs";
 
 type HomeProps = {
-  onStartLobby: (name: string, isHost: boolean, code?: string) => void;
+  onStartLobby: (name: string, isHost: boolean, code?: string, mode?: "A" | "B") => void;
   muted: boolean;
   toggleMute: () => void;
 };
@@ -14,6 +14,9 @@ export default function Home({ onStartLobby, muted, toggleMute }: HomeProps) {
   const [name, setName] = useState("");
   const [code, setCode] = useState("");
   const [error, setError] = useState("");
+  const [selectedMode, setSelectedMode] = useState<"A" | "B">("A");
+  
+  console.log("Home - selectedMode:", selectedMode);
 
   const handleCreate = () => {
     if (!name.trim() || name.trim().length > 13) {
@@ -21,7 +24,7 @@ export default function Home({ onStartLobby, muted, toggleMute }: HomeProps) {
       return;
     }
     setError("");
-    onStartLobby(name.trim(), true); // Notify parent to create lobby
+    onStartLobby(name.trim(), true, undefined, selectedMode); // Notify parent to create lobby
   };
 
   const handleJoin = () => {
@@ -34,7 +37,7 @@ export default function Home({ onStartLobby, muted, toggleMute }: HomeProps) {
       return;
     }
     setError("");
-    onStartLobby(name.trim(), false, code.trim()); // Notify parent to join lobby
+    onStartLobby(name.trim(), false, code.trim(), selectedMode); // Notify parent to join lobby
   };
 
   return (
@@ -116,7 +119,8 @@ export default function Home({ onStartLobby, muted, toggleMute }: HomeProps) {
               <div className="buttons">
                 <Tabs
                   tabs={["Mode A", "Mode B"]}
-                  onTabChange={(i) => console.log("Active tab:", i)}
+                  activeTab={selectedMode === "A" ? 0 : 1}
+                  onTabChange={(i) => setSelectedMode(i === 0 ? "A" : "B")}
                 />
 
                 <Button onClick={handleCreate}>
