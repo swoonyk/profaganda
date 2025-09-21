@@ -48,14 +48,10 @@ export class CUReviewsFetcher {
     'GOVT', 'SOC', 'ANTH', 'LING', 'SPAN', 'FREN', 'GERM'
   ];
 
-  /**
-   * Fetch courses by subject using the real CUReviews API
-   */
   async fetchCoursesBySubject(subject: string): Promise<CUReviewsCourse[]> {
     try {
-      console.log(`🔍 Fetching courses for subject: ${subject}`);
+      console.log(`Fetching courses for subject: ${subject}`);
       
-      // Use the real CUReviews API endpoint
       const response = await axios.post(`${this.baseUrl}/courses/get-by-subject`, {
         subject: subject.toLowerCase()
       }, {
@@ -65,20 +61,17 @@ export class CUReviewsFetcher {
 
       if (response.data && response.data.result) {
         const courses = response.data.result as CUReviewsCourse[];
-        console.log(`✅ Found ${courses.length} courses for ${subject}`);
+        console.log(`Found ${courses.length} courses for ${subject}`);
         return courses;
       }
       
       return [];
     } catch (error) {
-      console.error(`❌ Error fetching courses for subject ${subject}:`, error);
+      console.error(`Error fetching courses for subject ${subject}:`, error);
       return [];
     }
   }
 
-  /**
-   * Fetch course details using course subject and number
-   */
   async fetchCourseByInfo(subject: string, number: string): Promise<CUReviewsCourse | null> {
     try {
       const response = await axios.post(`${this.baseUrl}/courses/get-by-info`, {
@@ -95,14 +88,11 @@ export class CUReviewsFetcher {
       
       return null;
     } catch (error) {
-      console.error(`❌ Error fetching course ${subject} ${number}:`, error);
+      console.error(`Error fetching course ${subject} ${number}:`, error);
       return null;
     }
   }
 
-  /**
-   * Fetch reviews for a specific course
-   */
   async fetchReviewsForCourse(courseId: string): Promise<CUReviewsReview[]> {
     try {
       const response = await axios.post(`${this.baseUrl}/courses/get-reviews`, {
@@ -118,16 +108,13 @@ export class CUReviewsFetcher {
       
       return [];
     } catch (error) {
-      console.error(`❌ Error fetching reviews for course ${courseId}:`, error);
+      console.error(`Error fetching reviews for course ${courseId}:`, error);
       return [];
     }
   }
 
-  /**
-   * Main method to fetch professors and reviews from CUReviews
-   */
   async fetchProfessorsAndReviews(maxCoursesPerSubject: number = 10): Promise<CUReviewsData> {
-    console.log('🏫 Starting CUReviews API data fetch...');
+    console.log('Starting CUReviews API data fetch...');
     
     const allProfessors = new Map<string, RawProfessor>();
     const allReviews: RawReview[] = [];
@@ -135,24 +122,20 @@ export class CUReviewsFetcher {
     try {
       for (const subject of this.commonSubjects) {
         try {
-          console.log(`📚 Processing subject: ${subject}`);
+          console.log(`Processing subject: ${subject}`);
           
-          // Get courses for this subject
           const courses = await this.fetchCoursesBySubject(subject);
           const limitedCourses = courses.slice(0, maxCoursesPerSubject);
           
           for (const course of limitedCourses) {
             try {
-              // Get reviews for this course
               const reviews = await this.fetchReviewsForCourse(course._id);
               
-              // Process each review to extract professor information
               for (const review of reviews) {
                 if (review.professor && review.professor.trim()) {
                   const professorName = review.professor.trim();
                   const professorKey = `${professorName}_${subject}`;
                   
-                  // Create or update professor entry
                   if (!allProfessors.has(professorKey)) {
                     const professor: RawProfessor = {
                       id: `cureviews_${professorKey}`,
@@ -168,10 +151,9 @@ export class CUReviewsFetcher {
                     };
                     
                     allProfessors.set(professorKey, professor);
-                    console.log(`  ✅ Added professor: ${professorName} (${subject})`);
+                    console.log(` Added professor: ${professorName} (${subject})`);
                   }
                   
-                  // Convert CUReviews review to our format
                   const rawReview: RawReview = {
                     id: `cureviews_${review._id}`,
                     professorId: `cureviews_${professorKey}`,
@@ -195,41 +177,35 @@ export class CUReviewsFetcher {
                 }
               }
               
-              // Add delay to be respectful to the API
               await new Promise(resolve => setTimeout(resolve, 500));
               
             } catch (error) {
-              console.error(`❌ Error processing course ${course.subject} ${course.number}:`, error);
+              console.error(`Error processing course ${course.subject} ${course.number}:`, error);
               continue;
             }
           }
           
-          // Add delay between subjects
           await new Promise(resolve => setTimeout(resolve, 1000));
           
         } catch (error) {
-          console.error(`❌ Error processing subject ${subject}:`, error);
+          console.error(`Error processing subject ${subject}:`, error);
           continue;
         }
       }
       
       const professors = Array.from(allProfessors.values());
-      console.log(`✅ CUReviews fetch complete: ${professors.length} professors, ${allReviews.length} reviews`);
+      console.log(`CUReviews fetch complete: ${professors.length} professors, ${allReviews.length} reviews`);
       
       return { professors, reviews: allReviews };
       
     } catch (error) {
-      console.error('❌ Error fetching from CUReviews API:', error);
+      console.error('Error fetching from CUReviews API:', error);
       
-      // Return empty data instead of fallback mock data
-      console.log('⚠️  Returning empty dataset due to API errors');
+      console.log('Returning empty dataset due to API errors');
       return { professors: [], reviews: [] };
     }
   }
 
-  /**
-   * Extract department from subject code (e.g., "CS" -> "Computer Science")
-   */
   private extractDepartmentFromSubject(subject: string): string {
     const departmentMap: Record<string, string> = {
       'CS': 'Computer Science',

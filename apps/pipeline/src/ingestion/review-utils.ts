@@ -1,8 +1,3 @@
-/**
- * Utility functions for processing and validating reviews
- * Extracted from mock-data.ts to remove dependency on mock data
- */
-
 export function normalizeReview(text: string): string {
   let normalized = text.replace(/<[^>]*>/g, '');
   

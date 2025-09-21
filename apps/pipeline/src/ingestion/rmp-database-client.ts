@@ -1,10 +1,7 @@
 import axios, { AxiosInstance } from 'axios';
 import type { RawReview, RawProfessor } from '@profaganda/shared';
 
-/**
- * TypeScript implementation of RateMyProfessor Database APIs
- * Based on the Python package: https://pypi.org/project/RateMyProfessor-Database-APIs/
- */
+
 
 interface RMPProfessorRaw {
   id: string;
@@ -85,19 +82,14 @@ export class RMPDatabaseClient {
     });
   }
 
-  /**
-   * Find Cornell University's school ID
-   * Cornell's RMP school ID is 298 based on URL pattern
-   */
+
   async getCornellSchoolId(): Promise<string> {
     return '298'; // Cornell University's RMP ID
   }
 
-  /**
-   * Fetch all professors from a school (equivalent to Python's fetch_all_professors_from_a_school)
-   */
+ 
   async fetchAllProfessorsFromSchool(schoolId: string): Promise<RMPProfessorRaw[]> {
-    console.log(`🏫 Fetching all professors from school ID: ${schoolId}`);
+    console.log(` Fetching all professors from school ID: ${schoolId}`);
     
     const allProfessors: RMPProfessorRaw[] = [];
     let cursor = '';
@@ -107,7 +99,7 @@ export class RMPDatabaseClient {
     try {
       while (hasNextPage && pageCount < 50) { // Safety limit
         pageCount++;
-        console.log(`📄 Fetching page ${pageCount}...`);
+        console.log(` Fetching page ${pageCount}...`);
 
         const query = {
           query: `
@@ -158,7 +150,7 @@ export class RMPDatabaseClient {
         }
         
         if (!response.data?.data?.search?.teachers) {
-          console.log('❌ No teacher data found in response');
+          console.log(' No teacher data found in response');
           console.log('Response structure:', JSON.stringify(response.data, null, 2).substring(0, 500));
           break;
         }
@@ -166,7 +158,7 @@ export class RMPDatabaseClient {
         const teachers = response.data.data.search.teachers;
         const edges = teachers.edges || [];
 
-        console.log(`  ✅ Found ${edges.length} professors on page ${pageCount}`);
+        console.log(`   Found ${edges.length} professors on page ${pageCount}`);
 
         for (const edge of edges) {
           const node = edge.node;
@@ -195,26 +187,21 @@ export class RMPDatabaseClient {
         if (!cursor) {
           hasNextPage = false;
         }
-
-        // Add delay to be respectful
         await new Promise(resolve => setTimeout(resolve, 1000));
       }
 
-      console.log(`✅ Total professors fetched: ${allProfessors.length}`);
+      console.log(` Total professors fetched: ${allProfessors.length}`);
       return allProfessors;
 
     } catch (error) {
-      console.error('❌ Error fetching professors from school:', error);
+      console.error(' Error fetching professors from school:', error);
       return [];
     }
   }
 
-  /**
-   * Fetch detailed information about a specific professor including all reviews
-   * (equivalent to Python's fetch_a_professor)
-   */
+ 
   async fetchProfessorDetails(professorId: string): Promise<RMPProfessorDetailed | null> {
-    console.log(`👨‍🏫 Fetching detailed info for professor ID: ${professorId}`);
+    console.log(` Fetching detailed info for professor ID: ${professorId}`);
 
     try {
       const query = {
@@ -267,7 +254,7 @@ export class RMPDatabaseClient {
           }
         `,
         variables: {
-          id: btoa(`Teacher-${professorId}`) // Base64 encode the ID like RMP expects
+          id: btoa(`Teacher-${professorId}`) 
         }
       };
 
@@ -278,7 +265,7 @@ export class RMPDatabaseClient {
       }
       
       if (!response.data?.data?.node) {
-        console.log(`❌ No data found for professor ${professorId}`);
+        console.log(` No data found for professor ${professorId}`);
         console.log(`   Encoded ID: ${btoa(`Teacher-${professorId}`)}`);
         return null;
       }
@@ -286,7 +273,7 @@ export class RMPDatabaseClient {
       const professor = response.data.data.node;
       const ratings = professor.ratings?.edges?.map((edge: any) => edge.node) || [];
 
-      console.log(`✅ Found ${ratings.length} ratings for ${professor.firstName} ${professor.lastName}`);
+      console.log(` Found ${ratings.length} ratings for ${professor.firstName} ${professor.lastName}`);
 
       return {
         id: professor.legacyId || professor.id,
@@ -310,14 +297,12 @@ export class RMPDatabaseClient {
       };
 
     } catch (error) {
-      console.error(`❌ Error fetching professor details for ${professorId}:`, error);
+      console.error(` Error fetching professor details for ${professorId}:`, error);
       return null;
     }
   }
 
-  /**
-   * Convert RMP professor data to our RawProfessor format
-   */
+ 
   convertToRawProfessor(rmpProf: RMPProfessorRaw): RawProfessor {
     return {
       id: `rmp_${rmpProf.id}`,
@@ -335,12 +320,10 @@ export class RMPDatabaseClient {
     };
   }
 
-  /**
-   * Convert RMP review data to our RawReview format
-   */
+ 
   convertToRawReviews(professorId: string, rmpReviews: RMPProfessorDetailed['ratings']): RawReview[] {
     return rmpReviews.map((review, index) => {
-      // Calculate overall rating from clarity and helpfulness
+
       const overallRating = Math.round((review.clarityRating + review.helpfulRating) / 2);
       
       return {
@@ -348,7 +331,7 @@ export class RMPDatabaseClient {
         professorId: professorId,
         text: review.comment || 'No comment provided',
         rating: Math.max(1, Math.min(5, overallRating)), // Ensure 1-5 range
-        source: 'rmp',
+        source: 'rmp' as const,
         metadata: {
           date: review.date,
           class: review.class,
@@ -359,12 +342,10 @@ export class RMPDatabaseClient {
           helpfulRating: review.helpfulRating
         }
       };
-    }).filter(review => review.text.length > 10); // Filter out very short reviews
+    }).filter(review => review.text.length > 10); 
   }
 
-  /**
-   * Normalize department names
-   */
+ 
   private normalizeDepartment(department: string): string {
     const departmentMap: Record<string, string> = {
       'Computer Science': 'Computer Science',
@@ -387,12 +368,11 @@ export class RMPDatabaseClient {
       'Education': 'Education'
     };
     
-    // Try exact match first
     if (departmentMap[department]) {
       return departmentMap[department];
     }
     
-    // Try partial matches
+    
     for (const [key, value] of Object.entries(departmentMap)) {
       if (department.toLowerCase().includes(key.toLowerCase()) || 
           key.toLowerCase().includes(department.toLowerCase())) {
@@ -400,45 +380,43 @@ export class RMPDatabaseClient {
       }
     }
     
-    return department; // Return original if no match found
+    return department; 
   }
 
-  /**
-   * Main method to fetch Cornell professors and reviews
-   */
+ 
   async fetchCornellData(maxProfessors: number = 100, maxReviewsPerProfessor: number = 50): Promise<{ professors: RawProfessor[], reviews: RawReview[] }> {
     console.log('🚀 Starting comprehensive Cornell data fetch from RateMyProfessor...');
     
     try {
-      // Step 1: Get Cornell's school ID
+      
       const schoolId = await this.getCornellSchoolId();
       
-      // Step 2: Fetch all professors from Cornell
+      
       const allProfessors = await this.fetchAllProfessorsFromSchool(schoolId);
       
       if (allProfessors.length === 0) {
-        console.log('❌ No professors found for Cornell');
+        console.log(' No professors found for Cornell');
         return { professors: [], reviews: [] };
       }
 
-      // Step 3: Filter professors with ratings and limit to requested amount
+      
       const professorsWithRatings = allProfessors
         .filter(prof => prof.numRatings > 0)
-        .sort((a, b) => b.numRatings - a.numRatings) // Sort by most reviewed
+        .sort((a, b) => b.numRatings - a.numRatings) 
         .slice(0, maxProfessors);
 
-      console.log(`📊 Found ${professorsWithRatings.length} professors with ratings (from ${allProfessors.length} total)`);
+      console.log(` Found ${professorsWithRatings.length} professors with ratings (from ${allProfessors.length} total)`);
 
-      // Step 4: Convert to our format
+      
       const rawProfessors = professorsWithRatings.map(prof => this.convertToRawProfessor(prof));
 
-      // Step 5: Fetch detailed reviews for each professor
+      
       const allReviews: RawReview[] = [];
       let processedCount = 0;
 
       for (const professor of professorsWithRatings) {
         processedCount++;
-        console.log(`📝 [${processedCount}/${professorsWithRatings.length}] Fetching reviews for ${professor.firstName} ${professor.lastName} (${professor.numRatings} reviews)`);
+        console.log(` [${processedCount}/${professorsWithRatings.length}] Fetching reviews for ${professor.firstName} ${professor.lastName} (${professor.numRatings} reviews)`);
         
         try {
           const detailed = await this.fetchProfessorDetails(professor.id);
@@ -448,27 +426,27 @@ export class RMPDatabaseClient {
             const reviews = this.convertToRawReviews(professorId, detailed.ratings.slice(0, maxReviewsPerProfessor));
             allReviews.push(...reviews);
             
-            console.log(`  ✅ Added ${reviews.length} reviews`);
+            console.log(` Added ${reviews.length} reviews`);
           } else {
-            console.log(`  ⚠️  No reviews found`);
+            console.log(` No reviews found`);
           }
           
-          // Add delay to be respectful to RMP
+          
           await new Promise(resolve => setTimeout(resolve, 2000));
           
         } catch (error) {
-          console.error(`  ❌ Error fetching reviews for ${professor.firstName} ${professor.lastName}:`, error);
+          console.error(` Error fetching reviews for ${professor.firstName} ${professor.lastName}:`, error);
           continue;
         }
       }
 
-      console.log(`✅ Cornell data fetch complete!`);
-      console.log(`📊 Total: ${rawProfessors.length} professors, ${allReviews.length} reviews`);
+      console.log(` Cornell data fetch complete!`);
+      console.log(` Total: ${rawProfessors.length} professors, ${allReviews.length} reviews`);
       
       return { professors: rawProfessors, reviews: allReviews };
 
     } catch (error) {
-      console.error('❌ Error in Cornell data fetch:', error);
+      console.error('Error in Cornell data fetch:', error);
       return { professors: [], reviews: [] };
     }
   }

@@ -5,7 +5,6 @@ import { fetchRealReviews, fetchConfigs } from './ingestion/real-data.js';
 import { SanitizationProcessor } from './sanitization/processor.js';
 import { generateAIReviews } from './generation/ai-reviews.js';
 
-// Load environment variables from .env file
 config({ path: '../../.env' });
 
 function loadConfig(): PipelineConfig {
@@ -33,23 +32,23 @@ async function main() {
   const startTime = Date.now();
   
   try {
-    console.log('🚀 Starting review ingestion and sanitization pipeline...');
+    console.log(' Starting review ingestion and sanitization pipeline...');
     
     const config = loadConfig();
     const db = await connectToMongoDB(config.mongodbUri);
     
-    console.log('📊 Setting up database...');
+    console.log(' Setting up database...');
     await runMigrations(db);
     
     const processor = new SanitizationProcessor(config.geminiApiKey, db);
     
     const initialStats = await processor.getProcessingStats();
-    console.log(`📈 Initial stats: ${initialStats.professors} professors, ${initialStats.reviews} reviews`);
+    console.log(` Initial stats: ${initialStats.professors} professors, ${initialStats.reviews} reviews`);
     
-    console.log('📥 Fetching reviews from real sources...');
+    console.log(' Fetching reviews from real sources...');
     const fetchConfig = process.env.NODE_ENV === 'production' ? 'production' : 'development';
     const { reviews, professors } = await fetchRealReviews(fetchConfigs[fetchConfig]);
-    console.log(`✅ Fetched ${reviews.length} reviews from ${professors.length} professors`);
+    console.log(` Fetched ${reviews.length} reviews from ${professors.length} professors`);
     
     const validReviews = reviews.filter(review => 
       review.text.length >= config.minReviewLength && 
@@ -57,26 +56,26 @@ async function main() {
     );
     
     if (validReviews.length !== reviews.length) {
-      console.log(`📏 Filtered to ${validReviews.length} valid reviews (${reviews.length - validReviews.length} excluded by length)`);
+      console.log(` Filtered to ${validReviews.length} valid reviews (${reviews.length - validReviews.length} excluded by length)`);
     }
     
     if (validReviews.length === 0) {
-      console.log('⚠️  No valid reviews to process');
+      console.log(' No valid reviews to process');
       return;
     }
     
-    console.log(`🤖 Starting sanitization with Gemini API (batch size: ${config.batchSize})...`);
+    console.log(` Starting sanitization with Gemini API (batch size: ${config.batchSize})...`);
     await processor.processBatch(validReviews, professors, config.batchSize);
     
     const finalStats = await processor.getProcessingStats();
-    console.log(`📊 Final stats: ${finalStats.professors} professors, ${finalStats.reviews} reviews`);
+    console.log(` Final stats: ${finalStats.professors} professors, ${finalStats.reviews} reviews`);
     
     const processingTime = (Date.now() - startTime) / 1000;
-    console.log(`✅ Pipeline completed successfully in ${processingTime.toFixed(2)}s`);
-    console.log(`📈 Processed ${finalStats.reviews - initialStats.reviews} new reviews`);
+    console.log(` Pipeline completed successfully in ${processingTime.toFixed(2)}s`);
+    console.log(` Processed ${finalStats.reviews - initialStats.reviews} new reviews`);
     
   } catch (error) {
-    console.error('❌ Pipeline failed:', error);
+    console.error(' Pipeline failed:', error);
     process.exit(1);
   } finally {
     await closeConnection();
@@ -105,7 +104,7 @@ async function statsCommand() {
     const processor = new SanitizationProcessor(config.geminiApiKey, db);
     
     const stats = await processor.getProcessingStats();
-    console.log('📊 Database Statistics:');
+    console.log(' Database Statistics:');
     console.log(`   Professors: ${stats.professors}`);
     console.log(`   Reviews: ${stats.reviews}`);
     
@@ -119,7 +118,7 @@ async function statsCommand() {
 
 async function generateAICommand() {
   try {
-    console.log('🤖 Starting AI review generation...');
+    console.log('Starting AI review generation...');
     const config = loadConfig();
     await generateAIReviews(config);
     

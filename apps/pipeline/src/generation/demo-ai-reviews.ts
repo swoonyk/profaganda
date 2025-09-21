@@ -2,10 +2,8 @@ import { config } from 'dotenv';
 import { createGeminiClient } from '@profaganda/shared';
 import type { GenerateReviewRequest, ProfessorCharacteristics } from '@profaganda/shared';
 
-// Load environment variables from .env file
 config({ path: '../../../../.env' });
 
-// Demo professor profiles for testing
 const DEMO_PROFESSORS: ProfessorCharacteristics[] = [
   {
     name: 'CS Professor Demo',
@@ -42,22 +40,21 @@ const DEMO_PROFESSORS: ProfessorCharacteristics[] = [
 ];
 
 export async function demoAIReviewGeneration(apiKey: string): Promise<void> {
-  console.log('🎭 AI Review Generation Demo\n');
+  console.log('AI Review Generation Demo\n');
   console.log('This demo shows the variety and realism of AI-generated professor reviews\n');
   
   const geminiClient = createGeminiClient(apiKey);
   
   for (const professor of DEMO_PROFESSORS) {
-    console.log(`\n🎓 ${professor.department} Professor`);
+    console.log(`\n ${professor.department} Professor`);
     console.log(`   Teaching Style: ${professor.teaching_style}`);
     console.log(`   Difficulty: ${professor.difficulty_level}`);
     console.log(`   Traits: ${professor.personality_traits?.join(', ')}\n`);
     
-    // Generate different types of reviews for this professor
     const reviewTypes: Array<{type: 'positive' | 'negative' | 'mixed', rating: number, label: string}> = [
-      { type: 'positive', rating: 5, label: '⭐ Positive Review (5/5)' },
-      { type: 'mixed', rating: 3, label: '🤔 Mixed Review (3/5)' },
-      { type: 'negative', rating: 2, label: '👎 Negative Review (2/5)' }
+      { type: 'positive', rating: 5, label: 'Positive Review (5/5)' },
+      { type: 'mixed', rating: 3, label: 'Mixed Review (3/5)' },
+      { type: 'negative', rating: 2, label: 'Negative Review (2/5)' }
     ];
     
     for (const reviewType of reviewTypes) {
@@ -73,27 +70,25 @@ export async function demoAIReviewGeneration(apiKey: string): Promise<void> {
         console.log(`   "${result.review_text}"`);
         console.log(`   (Generated Rating: ${result.rating}/5, Sentiment: ${result.sentiment})\n`);
         
-        // Small delay to avoid rate limiting
         await new Promise(resolve => setTimeout(resolve, 300));
         
       } catch (error) {
-        console.log(`   ❌ Failed to generate review: ${error}\n`);
+        console.log(`    Failed to generate review: ${error}\n`);
       }
     }
     
     console.log('   ' + '─'.repeat(80) + '\n');
   }
   
-  console.log('🎉 Demo completed! These AI-generated reviews will be used in your game.');
-  console.log('💡 Notice how each review reflects the professor\'s characteristics and department.');
-  console.log('🎯 The reviews vary in tone, length, and style to simulate different students.');
+  console.log('Demo completed! These AI-generated reviews will be used in your game.');
+  console.log('Notice how each review reflects the professor\'s characteristics and department.');
+  console.log('The reviews vary in tone, length, and style to simulate different students.');
 }
 
-// Command line interface for demo
 if (process.argv[2] === 'demo') {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
-    console.error('❌ GEMINI_API_KEY environment variable not set');
+    console.error('GEMINI_API_KEY environment variable not set');
     process.exit(1);
   }
   

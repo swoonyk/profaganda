@@ -8,7 +8,6 @@ import type {
   PipelineConfig 
 } from '@profaganda/shared';
 
-// Professor characteristics for Cornell departments
 const PROFESSOR_TEMPLATES: Record<string, ProfessorCharacteristics[]> = {
   'Computer Science': [
     {
@@ -93,7 +92,6 @@ export class AIReviewGenerator {
   private getRandomTemplate(department: string): ProfessorCharacteristics {
     const templates = PROFESSOR_TEMPLATES[department];
     if (!templates || templates.length === 0) {
-      // Fallback for unknown departments
       return {
         name: 'Professor',
         department,
@@ -109,7 +107,6 @@ export class AIReviewGenerator {
   private generateReviewVariations(professor: Professor, template: ProfessorCharacteristics): GenerateReviewRequest[] {
     const variations: GenerateReviewRequest[] = [];
     
-    // Generate a mix of positive, negative, and mixed reviews with different ratings
     const reviewTypes: Array<{type: 'positive' | 'negative' | 'mixed', rating: number}> = [
       { type: 'positive', rating: 5 },
       { type: 'positive', rating: 4 }, 
@@ -120,8 +117,7 @@ export class AIReviewGenerator {
       { type: 'negative', rating: 1 }
     ];
 
-    // Select 3-5 random review types for variety
-    const numReviews = 3 + Math.floor(Math.random() * 3); // 3-5 reviews
+    const numReviews = 3 + Math.floor(Math.random() * 3);
     const selectedTypes = reviewTypes.sort(() => 0.5 - Math.random()).slice(0, numReviews);
 
     for (const reviewType of selectedTypes) {
@@ -139,7 +135,6 @@ export class AIReviewGenerator {
     try {
       console.log(`Generating AI reviews for professor ${professor.internal_code}...`);
       
-      // Determine department from professor data or use a default
       const department = professor.department || 'Computer Science';
       const template = this.getRandomTemplate(department);
       
@@ -148,7 +143,6 @@ export class AIReviewGenerator {
       
       const generatedReviews = await this.geminiClient.generateReviewBatch(reviewRequests);
       
-      // Save generated reviews to database
       for (const review of generatedReviews) {
         await this.dbQueries.createReview(
           professor._id!,
@@ -159,23 +153,22 @@ export class AIReviewGenerator {
         );
       }
       
-      console.log(`  ✅ Successfully generated and saved ${generatedReviews.length} AI reviews`);
+      console.log(`Successfully generated and saved ${generatedReviews.length} AI reviews`);
       
     } catch (error) {
-      console.error(`❌ Error generating reviews for professor ${professor.internal_code}:`, error);
+      console.error(`Error generating reviews for professor ${professor.internal_code}:`, error);
     }
   }
 
   async generateAllAIReviews(): Promise<void> {
     try {
-      console.log('🤖 Starting AI review generation for all professors...\n');
+      console.log('Starting AI review generation for all professors...\n');
       
-      // Get all professors from the database
       const db = this.dbQueries.database;
       const professors = await db.collection<Professor>('professors').find({}).toArray();
       
       if (professors.length === 0) {
-        console.log('⚠️  No professors found in database. Please run the ingestion pipeline first.');
+        console.log('No professors found in database. Please run the ingestion pipeline first.');
         return;
       }
       
@@ -190,33 +183,31 @@ export class AIReviewGenerator {
         
         await this.generateReviewsForProfessor(professorWithId);
         
-        // Count reviews generated for this professor
         const count = await this.dbQueries.database.collection('reviews').countDocuments({
           professor_id: professorWithId._id,
           is_ai_generated: true
         });
         totalGenerated += count;
         
-        // Small delay between professors to avoid rate limits
         await new Promise(resolve => setTimeout(resolve, 500));
       }
       
-      console.log(`\n🎉 AI review generation complete!`);
-      console.log(`📊 Total AI reviews generated: ${totalGenerated}`);
+      console.log(`\nAI review generation complete!`);
+      console.log(`Total AI reviews generated: ${totalGenerated}`);
       
     } catch (error) {
-      console.error('❌ Error in AI review generation:', error);
+      console.error('Error in AI review generation:', error);
       throw error;
     }
   }
 }
 
 export async function generateAIReviews(config: PipelineConfig): Promise<void> {
-  console.log('🔌 Connecting to database...');
+  console.log('Connecting to database...');
   const db = await connectToMongoDB(config.mongodbUri);
   const dbQueries = createDatabaseQueries(db);
   
-  console.log('🧠 Initializing Gemini client...');
+  console.log('Initializing Gemini client...');
   const geminiClient = createGeminiClient(config.geminiApiKey);
   
   const generator = new AIReviewGenerator(geminiClient, dbQueries);

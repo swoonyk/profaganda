@@ -15,7 +15,6 @@ export class SanitizationProcessor {
   }
 
   async processBatch(reviews: RawReview[], professors: RawProfessor[], batchSize: number = 20): Promise<void> {
-    // First, create all professors
     await this.createProfessors(professors);
     
     console.log(`Processing ${reviews.length} reviews in batches of ${batchSize}`);
@@ -51,14 +50,12 @@ export class SanitizationProcessor {
       try {
         const professorInternalCode = this.generateInternalCode(rawProfessor.id, rawProfessor.source);
         
-        // Check if professor already exists
         const existingProfessor = await this.dbQueries.findProfessorByInternalCode(professorInternalCode);
         if (existingProfessor) {
           console.log(`Professor ${rawProfessor.name} already exists with code: ${professorInternalCode}`);
           continue;
         }
-
-        // Create new professor with full information
+        
         const professor = await this.dbQueries.createProfessor(
           professorInternalCode,
           rawProfessor.name,
