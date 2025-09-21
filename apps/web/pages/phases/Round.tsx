@@ -52,7 +52,9 @@ export default function Round({ muted, toggleMute }: RoundProps) {
       <ul>
         {options.map((opt, i) => (
           <li key={i}>
-            <Button onClick={() => submitAnswer(opt)}>{opt}</Button>
+            <button onClick={() => submitAnswer(opt)} className="option">
+              {opt}
+            </button>
           </li>
         ))}
       </ul>
