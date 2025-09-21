@@ -19,9 +19,13 @@ export function useSocket(): Socket | null {
     }
     
     if (!socket) {
+      // Determine if we should use secure connection based on URL or current page protocol
+      const isSecure = url.startsWith('https://') || url.startsWith('wss://') || 
+                      (typeof window !== 'undefined' && window.location.protocol === 'https:');
+      
       socket = io(url, {
         transports: ['websocket', 'polling'], // Try WebSocket first, fallback to polling
-        secure: false, // Set to true only if using HTTPS
+        secure: isSecure, // Auto-detect secure connection based on URL or page protocol
         reconnection: true,
         reconnectionAttempts: Infinity,
         reconnectionDelay: 1000,
