@@ -1,164 +1,134 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { useSocket } from "./useSocket";
 
-export interface Player {
-  playerId: string;
-  name: string;
-  points: number;
-  yourself?: boolean;
-  isHost?: boolean;
-  // Server sets true once player has submitted at least once in the current round
-  hasAnswered?: boolean;
-}
-
-export interface GameState {
-  phase: "home" | "lobby" | "round" | "leaderboard" | "end";
-  players: Player[];
-  roundNumber: number;
-  options?: string[];
-  roundId?: string;
-  partyId?: string;
-  connected: boolean;
-  playerId?: string;
-  gameMode?: "A" | "B";
-  gameData?: any;
-
-  // Authoritative end time (optional, recommended if server provides)
-  roundEndsAt?: string; // ISO timestamp like "2025-09-21T09:00:00.000Z"
-}
-
-export function useGameState() {
+export function useGameActions() {
   const socket = useSocket();
-  const [gameState, setGameState] = useState<GameState>({
-    phase: "home",
-    players: [],
-    roundNumber: 1,
-    connected: false,
-  });
+  const currentRoundIdRef = useRef<string | null>(null);
+  const playerIdRef = useRef<string | null>(null);
 
+  // Capture roundId for all clients when a round starts
   useEffect(() => {
     if (!socket) return;
 
-    // --- Named handlers so we can .off() them later ---
-
-    const onConnect = () => {
-      setGameState((prev) => ({
-        ...prev,
-        connected: true,
-        gameMode: prev.gameMode, // preserve
-      }));
+    const onRoundStarted = ({ roundId }: { roundId: string }) => {
+      console.log("useGameActions:onRoundStarted -> roundId", roundId);
+      currentRoundIdRef.current = roundId;
+    };
+    const onRoundResults = () => {
+      console.log("useGameActions:onRoundResults");
+      // optional: currentRoundIdRef.current = null;
     };
 
-    const onDisconnect = () => {
-      setGameState((prev) => ({
-        ...prev,
-        connected: false,
-        gameMode: prev.gameMode, // preserve
-      }));
-    };
-
-    const onConnected = ({
-      playerId,
-      partyId,
-    }: {
-      playerId: string;
-      partyId: string;
-    }) => {
-      setGameState((prev) => {
-        // Fall back to stored mode if prev lost it
-        const storedMode =
-          typeof window !== "undefined"
-            ? (localStorage.getItem("selectedGameMode") as "A" | "B" | null)
-            : null;
-        const gameMode = prev.gameMode || storedMode || "A";
-        return { ...prev, playerId, partyId, gameMode };
-      });
-    };
-
-    const onPlayersUpdate = ({ players }: { players: Player[] }) => {
-      setGameState((prev) => ({
-        ...prev,
-        gameMode: prev.gameMode, // preserve
-        players: players.map((p) => ({
-          ...p,
-          yourself: p.playerId === prev.playerId,
-          hasAnswered: p.hasAnswered,
-        })),
-      }));
-    };
-
-    const onPhaseChange = ({ phase }: { phase: GameState["phase"] }) => {
-      setGameState((prev) => ({
-        ...prev,
-        phase,
-        gameMode: prev.gameMode, // preserve
-      }));
-    };
-
-    const onRoundStarted = ({
-      roundId,
-      options,
-      mode,
-      gameData,
-      roundEndsAt,
-    }: {
-      roundId: string;
-      options: string[];
-      mode?: "A" | "B";
-      gameData?: any;
-      roundEndsAt?: string;
-    }) => {
-      setGameState((prev) => ({
-        ...prev,
-        phase: "round",
-        roundId,
-        options,
-        gameMode: mode, // server may set the chosen mode
-        gameData,
-        roundEndsAt, // may be undefined; UI falls back to local timer
-      }));
-    };
-
-    const onRoundResults = ({
-      players,
-      roundNumber,
-    }: {
-      players: Player[];
-      roundNumber: number;
-    }) => {
-      setGameState((prev) => ({
-        ...prev,
-        phase: "leaderboard",
-        gameMode: prev.gameMode, // preserve
-        players: players.map((p) => ({
-          ...p,
-          yourself: p.playerId === prev.playerId,
-        })),
-        roundNumber,
-        roundEndsAt: undefined, // clear timing at end of round
-      }));
-    };
-
-    // --- Register with named handlers ---
-    socket.on("connect", onConnect);
-    socket.on("disconnect", onDisconnect);
-    socket.on("connected", onConnected);
-    socket.on("server:players_update", onPlayersUpdate);
-    socket.on("server:phase_change", onPhaseChange);
     socket.on("server:round_started", onRoundStarted);
     socket.on("server:round_results", onRoundResults);
-
-    // --- Cleanup with the same named handlers ---
     return () => {
-      socket.off("connect", onConnect);
-      socket.off("disconnect", onDisconnect);
-      socket.off("connected", onConnected);
-      socket.off("server:players_update", onPlayersUpdate);
-      socket.off("server:phase_change", onPhaseChange);
       socket.off("server:round_started", onRoundStarted);
       socket.off("server:round_results", onRoundResults);
     };
   }, [socket]);
 
-  return { ...gameState, setGameState };
+  const joinGame = useCallback(
+    (name: string, isHost: boolean, code?: string) => {
+      if (!socket) return;
+
+      const playerId = `player-${Math.random().toString(36).slice(2, 8)}`;
+      playerIdRef.current = playerId;
+
+      console.log("useGameActions:joinGame emit connect_player", {
+        playerId,
+        isHost,
+        code,
+      });
+
+      socket.emit("connect_player", {
+        playerId,
+        partyId: code || `${Math.random().toString(36).slice(2, 8)}`,
+        isHost,
+        name,
+      });
+    },
+    [socket]
+  );
+
+  const startRound = useCallback(
+    async (mode: "A" | "B" = "A") => {
+      if (!socket) return;
+
+      const roundId = `round-${Date.now()}`;
+      currentRoundIdRef.current = roundId;
+
+      let gameData: any;
+      let correctAnswer: any;
+      let options: string[] = [];
+
+      try {
+        console.log("useGameActions:startRound -> fetching question for mode", mode);
+
+        if (mode === "A") {
+          const response = await fetch("/api/game/mode1/question");
+          if (!response.ok)
+            throw new Error(`API request failed: ${response.status} ${response.statusText}`);
+          gameData = await response.json();
+          correctAnswer = gameData.correctProfessorId;
+          options = gameData.professorOptions.map((p: any) => p._id);
+        } else {
+          const response = await fetch("/api/game/mode2/question");
+          if (!response.ok)
+            throw new Error(`API request failed: ${response.status} ${response.statusText}`);
+          gameData = await response.json();
+          correctAnswer = gameData.isRealReview; // true if real, false if AI
+          options = ["real", "ai"];
+        }
+
+        const payload = {
+          roundId,
+          mode,
+          correctAnswer,
+          options,
+          gameData,
+          // Prefer computing roundEndsAt on the server and including it in server:round_started
+          // roundEndsAt: new Date(Date.now() + 30_000).toISOString()
+        };
+        console.log("useGameActions:startRound emit host:start_round", payload);
+        socket.emit("host:start_round", payload);
+      } catch (error) {
+        console.error("Failed to start round:", error);
+      }
+    },
+    [socket]
+  );
+
+  const submitAnswer = useCallback(
+    (choice: boolean | string) => {
+      if (!socket || !currentRoundIdRef.current) {
+        console.error("No socket connection or active round to submit answer to");
+        return;
+      }
+
+      const payload = {
+        roundId: currentRoundIdRef.current,
+        choice,
+      };
+      console.log("useGameActions:submitAnswer emit player:submit_answer", payload);
+      socket.emit("player:submit_answer", payload);
+    },
+    [socket]
+  );
+
+  const leaveGame = useCallback(() => {
+    if (socket) {
+      socket.disconnect();
+    }
+    currentRoundIdRef.current = null;
+    playerIdRef.current = null;
+  }, [socket]);
+
+  return {
+    joinGame,
+    startRound,
+    submitAnswer,
+    leaveGame,
+    currentRoundId: currentRoundIdRef.current,
+    playerId: playerIdRef.current,
+  };
 }
