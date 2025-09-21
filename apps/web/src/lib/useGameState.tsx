@@ -46,21 +46,22 @@ export function useGameState() {
     socket.on("disconnect", onDisconnect);
 
     // Server assigns player ID and party ID
-    const onConnected = ({ playerId, partyId }: { playerId: string; partyId: string }) => {
-      setGameState((prev) => {
-        console.log("Connected - preserving gameMode:", prev.gameMode);
-        return { ...prev, playerId, partyId };
-      });
-
-      // OPTIONAL: ask server for snapshot on reconnect if you support it
-      // socket.emit("client:request_state");
-    };
-    socket.on("connected", onConnected);
+    socket.on(
+      "connected",
+      ({ playerId, partyId }: { playerId: string; partyId: string }) => {
+        setGameState((prev) => {
+          console.log("Connected - preserving gameMode:", prev.gameMode);
+          // Ensure gameMode is preserved during connection events
+          return { ...prev, playerId, partyId, gameMode: prev.gameMode };
+        });
+      }
+    );
 
     // Update player list from server (preserve hasAnswered if provided)
     const onPlayersUpdate = ({ players }: { players: Player[] }) => {
       setGameState((prev) => ({
         ...prev,
+        gameMode: prev.gameMode, // Preserve gameMode
         players: players.map((p) => ({
           ...p,
           yourself: p.playerId === prev.playerId,
@@ -71,9 +72,11 @@ export function useGameState() {
     socket.on("server:players_update", onPlayersUpdate);
 
     // Phase changes
-    const onPhaseChange = ({ phase }: { phase: GameState["phase"] }) =>
-      setGameState((prev) => ({ ...prev, phase }));
-    socket.on("server:phase_change", onPhaseChange);
+    socket.on(
+      "server:phase_change",
+      ({ phase }: { phase: GameState["phase"] }) =>
+        setGameState((prev) => ({ ...prev, phase, gameMode: prev.gameMode }))
+    );
 
     // Round started (accept roundEndsAt if server provides it)
     const onRoundStarted = ({
@@ -100,25 +103,21 @@ export function useGameState() {
       }));
     socket.on("server:round_started", onRoundStarted);
 
-    // Round results (drives leaderboard phase)
-    const onRoundResults = ({
-      players,
-      roundNumber,
-    }: {
-      players: Player[];
-      roundNumber: number;
-    }) =>
-      setGameState((prev) => ({
-        ...prev,
-        phase: "leaderboard",
-        players: players.map((p) => ({
-          ...p,
-          yourself: p.playerId === prev.playerId,
-        })),
-        roundNumber,
-        roundEndsAt: undefined, // clear at end of round
-      }));
-    socket.on("server:round_results", onRoundResults);
+    // Round results
+    socket.on(
+      "server:round_results",
+      ({ players, roundNumber }: { players: Player[]; roundNumber: number }) =>
+        setGameState((prev) => ({
+          ...prev,
+          phase: "leaderboard",
+          gameMode: prev.gameMode, // Preserve gameMode
+          players: players.map((p) => ({
+            ...p,
+            yourself: p.playerId === prev.playerId,
+          })),
+          roundNumber,
+        }))
+    );
 
     // Cleanup
     return () => {

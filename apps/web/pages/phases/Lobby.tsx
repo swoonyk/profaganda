@@ -92,9 +92,9 @@ export default function Lobby({ muted, toggleMute }: LobbyProps) {
 
         {/* Selected Game Mode Display */}
         <div style={{ textAlign: "center", margin: "16px 0" }}>
-          {/* <h3 style={{ fontSize: "18px", color: "#0ad6a1", margin: "0 0 8px 0" }}>
+          <h3 style={{ fontSize: "18px", color: "#0ad6a1", margin: "0 0 8px 0" }}>
             Selected Mode: {selectedMode}
-          </h3> */}
+          </h3>
           <p style={{ fontSize: "14px", color: "rgba(255, 255, 255, 0.8)", margin: 0 }}>
             {selectedMode === "A" ? "Guess the Professor" : "Spot the Fake Review"}
           </p>
