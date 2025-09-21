@@ -140,44 +140,72 @@ io.on('connection', (socket) => {
   });
 
   // Host starts a round
-  // Payload: { roundId, mode: 'A'|'B', correctAnswer: string|boolean, options?: string[], partyId?, gameData? }
-  socket.on('host:start_round', ({ roundId, mode, correctAnswer, options = [], partyId, gameData }) => {
+  // Payload: { roundId, mode: 'A'|'B', loading?: boolean, partyId? }
+  socket.on('host:start_round', ({ roundId, mode, loading = false, partyId }) => {
     try {
       if (!socket.data.isHost) return;
       const pId = partyId || socket.data.partyId;
       if (!roundId || !mode || (mode !== 'A' && mode !== 'B') || !pId) return;
 
-      // Prepare round state
-      const optionsSet = new Set(options);
+      // Start timer immediately for fast UX
       let timeout = null;
       if (ROUND_DURATION_MS > 0) {
         timeout = setTimeout(() => endRound(roundId, pId), ROUND_DURATION_MS);
       }
 
+      // Initialize round with loading state
       rounds.set(roundId, {
         mode,
-        correctAnswer,       // Mode A: professorId (string); Mode B: boolean (true=AI)
-        counts: {},          // key -> count (professorId or 'real'/'ai')
-        answered: new Set(), // playerIds who already answered
+        correctAnswer: null,  // Will be set when frontend provides data
+        counts: {},
+        answered: new Set(),
         partyId: pId,
-        optionsSet,
-        timeout
+        optionsSet: new Set(),
+        timeout,
+        loading
       });
 
-      // Change phase to round
+      // Change phase to round immediately
       io.to(`party:${pId}`).emit('server:phase_change', { phase: 'round' });
       
-      // Broadcast round start (clients render from this)
+      // Broadcast round start with loading state
       io.to(`party:${pId}`).emit('server:round_started', {
         roundId,
         mode,
-        options,
-        gameData
+        options: [],
+        gameData: null,
+        loading
       });
 
       console.log(`Round ${roundId} started in party ${pId} (mode ${mode})`);
     } catch (err) {
       console.error('host:start_round error', err);
+    }
+  });
+
+  // Host updates round with data (called after API fetch completes)
+  socket.on('host:update_round', ({ roundId, correctAnswer, options = [], gameData }) => {
+    try {
+      if (!socket.data.isHost) return;
+      
+      const round = rounds.get(roundId);
+      if (!round) return;
+
+      // Update round with real data
+      round.correctAnswer = correctAnswer;
+      round.optionsSet = new Set(options);
+      round.loading = false;
+
+      // Broadcast updated data to all players
+      io.to(`party:${round.partyId}`).emit('server:round_data_ready', {
+        roundId,
+        options,
+        gameData
+      });
+
+      console.log(`Round ${roundId} updated with real data`);
+    } catch (err) {
+      console.error('host:update_round error', err);
     }
   });
 

@@ -20,6 +20,7 @@ export interface GameState {
   playerId?: string;
   gameMode?: "A" | "B";
   gameData?: any;
+  loading?: boolean;
 }
 
 export function useGameState() {
@@ -71,7 +72,7 @@ export function useGameState() {
         setGameState((prev) => ({ ...prev, phase }))
     );
 
-    // Round started
+    // Round started (immediate with possible loading state)
     socket.on(
       "server:round_started",
       ({
@@ -79,11 +80,13 @@ export function useGameState() {
         options,
         mode,
         gameData,
+        loading,
       }: {
         roundId: string;
         options: string[];
         mode?: "A" | "B";
         gameData?: any;
+        loading?: boolean;
       }) =>
         setGameState((prev) => ({
           ...prev,
@@ -92,6 +95,27 @@ export function useGameState() {
           options,
           gameMode: mode,
           gameData,
+          loading: loading || false,
+        }))
+    );
+
+    // Round data ready (when API call completes)
+    socket.on(
+      "server:round_data_ready",
+      ({
+        roundId,
+        options,
+        gameData,
+      }: {
+        roundId: string;
+        options: string[];
+        gameData: any;
+      }) =>
+        setGameState((prev) => ({
+          ...prev,
+          options,
+          gameData,
+          loading: false,
         }))
     );
 
@@ -117,6 +141,7 @@ export function useGameState() {
       socket.off("server:players_update");
       socket.off("server:phase_change");
       socket.off("server:round_started");
+      socket.off("server:round_data_ready");
       socket.off("server:round_results");
     };
   }, [socket]);

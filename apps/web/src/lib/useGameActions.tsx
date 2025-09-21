@@ -30,43 +30,98 @@ export function useGameActions() {
       const roundId = `round-${Date.now()}`;
       currentRoundIdRef.current = roundId;
 
-      let gameData;
-      let correctAnswer;
+      console.log(`Starting round ${roundId} in mode ${mode}`);
+
+      // Immediately start the round for fast UX
+      socket.emit("host:start_round", {
+        roundId,
+        mode,
+        loading: true,
+      });
+
+      // Fetch data from production API in parallel
+      let gameData: any;
+      let correctAnswer: any;
       let options: string[] = [];
 
       try {
-        // Use relative API paths for same-origin requests (no CORS issues)
-        if (mode === "A") {
-          const response = await fetch("/api/game/mode1/question");
-          if (!response.ok) {
-            throw new Error(
-              `API request failed: ${response.status} ${response.statusText}`
-            );
-          }
+        const apiUrl = mode === "A" 
+          ? "https://api-chi-neon.vercel.app/game/mode1/question"
+          : "https://api-chi-neon.vercel.app/game/mode2/question";
+
+        const response = await fetch(apiUrl, {
+          method: "GET",
+          headers: {
+            "Accept": "application/json",
+            "Content-Type": "application/json"
+          },
+          // 8 second timeout for API calls
+          signal: AbortSignal.timeout(8000)
+        });
+
+        if (response.ok) {
           gameData = await response.json();
-          correctAnswer = gameData.correctProfessorId;
-          options = gameData.professorOptions.map((p: any) => p._id);
-        } else {
-          const response = await fetch("/api/game/mode2/question");
-          if (!response.ok) {
-            throw new Error(
-              `API request failed: ${response.status} ${response.statusText}`
-            );
+          
+          if (!gameData.error) {
+            if (mode === "A") {
+              correctAnswer = gameData.correctProfessorId;
+              options = gameData.professorOptions.map((p: any) => p._id);
+            } else {
+              correctAnswer = gameData.isRealReview;
+              options = ["real", "ai"];
+            }
+
+            // Send real data to server
+            socket.emit("host:update_round", {
+              roundId,
+              correctAnswer,
+              options,
+              gameData,
+            });
+
+            console.log(`✅ Round ${roundId} loaded with real data`);
+            return;
           }
-          gameData = await response.json();
-          correctAnswer = gameData.isRealReview; // true if real, false if AI
-          options = ["real", "ai"];
         }
 
-        socket.emit("host:start_round", {
-          roundId,
-          mode,
-          correctAnswer,
-          options,
-          gameData,
-        });
+        throw new Error(`API failed: ${response.status}`);
+        
       } catch (error) {
-        console.error("Failed to start round:", error);
+        console.warn(`⚠️ Production API failed, using local fallback:`, error);
+        
+        // Fallback to local API
+        try {
+          const localUrl = mode === "A" 
+            ? "/api/game/mode1/question"
+            : "/api/game/mode2/question";
+
+          const response = await fetch(localUrl);
+          if (response.ok) {
+            gameData = await response.json();
+            
+            if (mode === "A") {
+              correctAnswer = gameData.correctProfessorId;
+              options = gameData.professorOptions.map((p: any) => p._id);
+            } else {
+              correctAnswer = gameData.isRealReview;
+              options = ["real", "ai"];
+            }
+
+            socket.emit("host:update_round", {
+              roundId,
+              correctAnswer,
+              options,
+              gameData,
+            });
+
+            console.log(`✅ Round ${roundId} loaded with local fallback data`);
+          } else {
+            throw new Error(`Local API failed: ${response.status}`);
+          }
+        } catch (localError) {
+          console.error(`❌ Both APIs failed:`, localError);
+          // Game will continue with empty state - server can handle this
+        }
       }
     },
     [socket]

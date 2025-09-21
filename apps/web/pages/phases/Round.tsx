@@ -22,6 +22,7 @@ export default function Round({ muted, toggleMute }: RoundProps) {
     roundId,
     gameMode,
     gameData,
+    loading,
   } = useGameState();
 
   const { submitAnswer } = useGameActions();
@@ -104,7 +105,7 @@ export default function Round({ muted, toggleMute }: RoundProps) {
   const professorOptions = gameData?.professorOptions ?? [];
 
   // Check if we're waiting for data
-  const waitingForData = !gameData || !professorOptions.length;
+  const waitingForData = loading || !gameData || !professorOptions.length;
 
   return (
     <div className="round">
@@ -128,9 +129,27 @@ export default function Round({ muted, toggleMute }: RoundProps) {
       </div>
 
       {waitingForData ? (
-        <div style={{ padding: 16 }}>
-          <h3>Loading question data...</h3>
-          <p>Fetching professor and review information from database...</p>
+        <div style={{ 
+          padding: 32, 
+          textAlign: "center",
+          background: "rgba(255, 255, 255, 0.1)",
+          borderRadius: "16px",
+          margin: "20px auto",
+          maxWidth: "500px"
+        }}>
+          <h3 style={{ color: "#0ad6a1", marginBottom: "16px" }}>Loading Question...</h3>
+          <div style={{ 
+            width: "40px", 
+            height: "40px", 
+            border: "4px solid rgba(10, 214, 161, 0.3)", 
+            borderTop: "4px solid #0ad6a1", 
+            borderRadius: "50%", 
+            animation: "spin 1s linear infinite",
+            margin: "0 auto 16px"
+          }}></div>
+          <p style={{ color: "rgba(255, 255, 255, 0.8)", margin: 0 }}>
+            {loading ? "Fetching real data from database..." : "Processing question data..."}
+          </p>
         </div>
       ) : (
         <>
