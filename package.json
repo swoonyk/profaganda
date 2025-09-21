@@ -19,6 +19,8 @@
     "pipeline:ingest-professors": "pnpm --filter pipeline ingest-professors",
     "pipeline:ingest-reviews": "pnpm --filter pipeline ingest-reviews",
     "api:dev": "pnpm --filter api dev",
+    "web:deploy": "cd apps/web && vercel --prod",
+    "web:dev": "pnpm --filter web dev",
     "db:migrate": "pnpm --filter database migrate"
   },
   "keywords": [],
