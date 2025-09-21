@@ -92,21 +92,16 @@ export default function Lobby({ muted, toggleMute }: LobbyProps) {
 
         {/* Game Mode Selection */}
         <div className="mode-selection">
-          <h3>Select Game Mode</h3>
           <div className="mode-options">
             <div 
               className={`mode-option ${selectedMode === "A" ? "selected" : ""}`}
               onClick={() => setSelectedMode("A")}
             >
-              <h4>Mode 1: Guess the Professor</h4>
-              <p>Given a review, guess which professor it&apos;s about</p>
             </div>
             <div 
               className={`mode-option ${selectedMode === "B" ? "selected" : ""}`}
               onClick={() => setSelectedMode("B")}
             >
-              <h4>Mode 2: Spot the Fake</h4>
-              <p>Given a professor, guess which review is AI-generated</p>
             </div>
           </div>
         </div>
