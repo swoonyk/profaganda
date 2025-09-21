@@ -1,5 +1,5 @@
 import { Button } from "components/ui/Button";
-import React from "react";
+import React, { useState } from "react";
 import { Player } from "../GameWindow";
 
 interface LobbyProps {
@@ -17,10 +17,6 @@ export default function Lobby({
   onStart,
   onBack,
 }: LobbyProps) {
-import React, { useState } from "react";
-
-export default function Lobby() {
-  const joinCode = "ABC123";
   const [copied, setCopied] = useState(false);
 
   const handleCopy = () => {
@@ -58,22 +54,6 @@ export default function Lobby() {
               <p>Waiting</p>
             </div>
           ))}
-          <div className="player yourself">
-            <p>clem</p>
-            <p>(you)</p>
-          </div>
-
-          <div className="player">
-            <p>soonwoo</p>
-          </div>
-
-          <div className="player waiting">
-            <p>Waiting</p>
-          </div>
-
-          <div className="player waiting">
-            <p>Waiting</p>
-          </div>
         </div>
       </div>
 
@@ -81,7 +61,6 @@ export default function Lobby() {
         <div className="top">
           <h2>Join code</h2>
 
-          <p>{joinCode}</p>
           <div className="code-wrapper">
             <p className="code">{joinCode}</p>
             <Button
@@ -94,7 +73,7 @@ export default function Lobby() {
           </div>
         </div>
 
-        <div className="buttons">
+        <div className="buttons row">
           <Button variant="secondary" className="back" onClick={onBack}>
             Back
           </Button>
