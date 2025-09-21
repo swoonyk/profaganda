@@ -44,9 +44,6 @@ export default function RoundMode2({ muted, toggleMute, gameData }: RoundMode2Pr
       <div className="header">
         <p>Time left: {timeLeft} secs</p>
         <p>Question {roundNumber} / 5</p>
-        <p style={{ fontSize: 12, color: "#ffff" }}>
-          Players: {players.length}
-        </p>
       </div>
 
       <div className="scoreboard">
