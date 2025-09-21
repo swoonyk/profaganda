@@ -15,7 +15,7 @@ export default function Round({
   updatePoints,
   onNext,
   roundNumber,
-  duration = 30,
+  duration = 100000,
 }: RoundProps) {
   const [timeLeft, setTimeLeft] = useState(duration);
 
@@ -45,14 +45,18 @@ export default function Round({
   return (
     <div className="round">
       <div className="header">
-        <p>Time left: {timeLeft} secs</p>
+        <p>
+          <span className="time">{timeLeft}</span> secs
+        </p>
 
-        <p>Question {roundNumber} of 5</p>
+        <p>
+          Question {roundNumber} <span className="slash">/</span> 5
+        </p>
       </div>
 
-      <h2>Round</h2>
-
-      <p>Quote is here</p>
+      <div className="panel">
+        <p>Quote is here</p>
+      </div>
 
       <ul>
         <li>option 1</li>

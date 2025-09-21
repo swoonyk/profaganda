@@ -277,3 +277,40 @@ button:disabled {
   border-top-left-radius: 0 !important;
   border-top-right-radius: 0 !important;
 }
+
+.round {
+  width: 1000px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.round .header {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.round .header p {
+  font-size: 20px;
+}
+
+.round .header .time {
+  padding: 4px 6px;
+  border-radius: 8px;
+  background: #fff;
+  color: #000;
+}
+
+.round .header .slash {
+  opacity: 50%;
+}
+
+.round .panel {
+  width: 100%;
+}
+
+.round .panel p {
+  font-size: 28px;
+  font-family: "Cherry Cream Soda", system-ui;
+}
