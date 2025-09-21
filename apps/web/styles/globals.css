@@ -104,7 +104,7 @@ input {
   border-radius: 8px;
   font-size: 20px;
   color: #fff;
-  height: 61px;
+  height: 55px;
   padding: 16px;
   transition: 120ms ease-out;
 }
@@ -125,6 +125,15 @@ input:focus {
 .buttons {
   display: flex;
   gap: 24px;
+}
+
+.buttons.row {
+  flex-direction: row;
+  width: 100%;
+}
+
+.buttons.row button:not(.back) {
+  flex: 1;
 }
 
 .buttons button.back {

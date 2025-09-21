@@ -35,7 +35,7 @@ export default function Lobby() {
           <p>ABC123</p>
         </div>
 
-        <div className="buttons">
+        <div className="buttons row">
           <Button variant="secondary" className="back">
             Back
           </Button>

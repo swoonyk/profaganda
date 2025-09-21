@@ -15,7 +15,7 @@ const baseStyle: React.CSSProperties = {
   cursor: "pointer",
   transition: "120ms ease-out",
   display: "inline-block",
-  height: "50px",
+  height: "55px",
   fontSize: "20px",
 };
 
