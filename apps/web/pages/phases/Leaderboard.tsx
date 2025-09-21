@@ -29,18 +29,24 @@ type LeaderboardProps = {
 };
 
 export default function Leaderboard({ muted, toggleMute }: LeaderboardProps) {
-  const { roundNumber } = useGameState();
+  const { roundNumber, gameMode, players } = useGameState();
   const { startRound } = useGameActions();
+  
+  // Get mode from game state, localStorage, or default to A
+  const storedMode = typeof window !== "undefined" 
+    ? localStorage.getItem("selectedGameMode") as "A" | "B" | null
+    : null;
+  const selectedMode = gameMode || storedMode || "A";
 
-  // Fake data for testing
-  const players = [
+  // Use real player data from game state, with fallback to fake data for testing
+  const realPlayers = players.length > 0 ? players : [
     { name: "Alice", points: 120 },
     { name: "Bob", points: 90 },
     { name: "Charlie", points: 150 },
     { name: "Esperanza", points: 110, yourself: true },
   ];
 
-  const sortedPlayers = [...players].sort((a, b) => b.points - a.points);
+  const sortedPlayers = [...realPlayers].sort((a, b) => b.points - a.points);
 
   return (
     <div className="leaderboard">
@@ -59,7 +65,7 @@ export default function Leaderboard({ muted, toggleMute }: LeaderboardProps) {
         </ul>
       </div>
 
-      <Button onClick={() => startRound("A")} variant="primary">
+      <Button onClick={() => startRound(selectedMode)} variant="primary">
         Next Round
       </Button>
     </div>

@@ -221,9 +221,6 @@ export default function RoundMode2({ muted, toggleMute, gameData }: RoundMode2Pr
           border: "2px solid rgba(10, 214, 161, 0.3)", 
           borderRadius: "12px" 
         }}>
-          <p style={{ color: "#0ad6a1", fontSize: "18px", margin: 0 }}>
-            Answer submitted: {selectedAnswer === "real" ? "Real Review" : "AI Generated"}
-          </p>
         </div>
       )}
     </div>
