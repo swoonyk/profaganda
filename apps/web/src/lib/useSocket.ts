@@ -64,7 +64,6 @@ export function useSocket(): Socket | null {
     }
     return url ? socket : null;
   }, [isClient, url]);
-
   useEffect(() => {
     if (!client) return;
     

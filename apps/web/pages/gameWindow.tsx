@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import Home from "./phases/Home";
 import Lobby from "./phases/Lobby";
 import Round from "./phases/Round";
@@ -7,9 +7,7 @@ import Leaderboard from "./phases/Leaderboard";
 import End from "./phases/End";
 import { useGameState } from "@/lib/useGameState";
 import { useGameActions } from "@/lib/useGameActions";
-
-// Use types from useGameState to avoid drift
-// import type { Player } from "@/lib/useGameState";
+import { useEffect, useState } from "react";
 
 type GameWindowProps = {
   muted: boolean;
@@ -33,8 +31,14 @@ export default function GameWindow({ muted, toggleMute }: GameWindowProps) {
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => setIsClient(true), []);
+  // const forcedPhase = "round";
 
-  const handleStartLobby = (name: string, isHost: boolean, code?: string, mode?: "A" | "B") => {
+  const handleStartLobby = (
+    name: string,
+    isHost: boolean,
+    code?: string,
+    mode?: "A" | "B"
+  ) => {
     // Create a temporary playerId for optimistic UI
     const tempPlayerId = "temp_" + Math.random().toString(36).substr(2, 9);
 
@@ -98,4 +102,6 @@ export default function GameWindow({ muted, toggleMute }: GameWindowProps) {
     default:
       return null;
   }
+
+  // return <End muted={muted} toggleMute={toggleMute} />;
 }

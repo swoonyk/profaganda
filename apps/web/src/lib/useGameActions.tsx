@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useRef } from "react";
 import { useSocket } from "./useSocket";
 
 export function useGameActions() {
@@ -6,39 +6,12 @@ export function useGameActions() {
   const currentRoundIdRef = useRef<string | null>(null);
   const playerIdRef = useRef<string | null>(null);
 
-  // Capture roundId for all clients when a round starts
-  useEffect(() => {
-    if (!socket) return;
-
-    const onRoundStarted = ({ roundId }: { roundId: string }) => {
-      console.log("useGameActions:onRoundStarted -> roundId", roundId);
-      currentRoundIdRef.current = roundId;
-    };
-    const onRoundResults = () => {
-      console.log("useGameActions:onRoundResults");
-      // optional: currentRoundIdRef.current = null;
-    };
-
-    socket.on("server:round_started", onRoundStarted);
-    socket.on("server:round_results", onRoundResults);
-    return () => {
-      socket.off("server:round_started", onRoundStarted);
-      socket.off("server:round_results", onRoundResults);
-    };
-  }, [socket]);
-
   const joinGame = useCallback(
     (name: string, isHost: boolean, code?: string) => {
       if (!socket) return;
 
       const playerId = `player-${Math.random().toString(36).slice(2, 8)}`;
       playerIdRef.current = playerId;
-
-      console.log("useGameActions:joinGame emit connect_player", {
-        playerId,
-        isHost,
-        code,
-      });
 
       socket.emit("connect_player", {
         playerId,
@@ -57,108 +30,41 @@ export function useGameActions() {
       const roundId = `round-${Date.now()}`;
       currentRoundIdRef.current = roundId;
 
-      let gameData: any;
-      let correctAnswer: any;
+      let gameData;
+      let correctAnswer;
       let options: string[] = [];
 
       try {
-        console.log("useGameActions:startRound -> fetching question for mode", mode);
-
+        // Use relative API paths for same-origin requests (no CORS issues)
         if (mode === "A") {
-          // Try production API first, fallback to local API
-          let response: Response;
-          let gameData: any;
-          
-          try {
-            console.log("Trying production API for Mode A...");
-            response = await fetch("https://api-chi-neon.vercel.app/game/mode1/question", {
-              method: "GET",
-              headers: {
-                "Accept": "application/json",
-                "Content-Type": "application/json"
-              },
-              // Add timeout to avoid hanging
-              signal: AbortSignal.timeout(10000) // 10 second timeout
-            });
-            
-            if (!response.ok) {
-              throw new Error(`Production API failed: ${response.status} ${response.statusText}`);
-            }
-            
-            gameData = await response.json();
-            
-            // Check if response has error
-            if (gameData.error) {
-              throw new Error(`Production API error: ${gameData.error}`);
-            }
-            
-            console.log("Production API success for Mode A");
-          } catch (error) {
-            console.warn("Production API failed, trying local API...", error);
-            response = await fetch("/api/game/mode1/question");
-            if (!response.ok) {
-              throw new Error(`Local API request failed: ${response.status} ${response.statusText}`);
-            }
-            gameData = await response.json();
-            console.log("Local API success for Mode A");
+          const response = await fetch("/api/game/mode1/question");
+          if (!response.ok) {
+            throw new Error(
+              `API request failed: ${response.status} ${response.statusText}`
+            );
           }
-          
+          gameData = await response.json();
           correctAnswer = gameData.correctProfessorId;
           options = gameData.professorOptions.map((p: any) => p._id);
         } else {
-          // Try production API first, fallback to local API
-          let response: Response;
-          let gameData: any;
-          
-          try {
-            console.log("Trying production API for Mode B...");
-            response = await fetch("https://api-chi-neon.vercel.app/game/mode2/question", {
-              method: "GET",
-              headers: {
-                "Accept": "application/json",
-                "Content-Type": "application/json"
-              },
-              // Add timeout to avoid hanging
-              signal: AbortSignal.timeout(10000) // 10 second timeout
-            });
-            
-            if (!response.ok) {
-              throw new Error(`Production API failed: ${response.status} ${response.statusText}`);
-            }
-            
-            gameData = await response.json();
-            
-            // Check if response has error
-            if (gameData.error) {
-              throw new Error(`Production API error: ${gameData.error}`);
-            }
-            
-            console.log("Production API success for Mode B");
-          } catch (error) {
-            console.warn("Production API failed, trying local API...", error);
-            response = await fetch("/api/game/mode2/question");
-            if (!response.ok) {
-              throw new Error(`Local API request failed: ${response.status} ${response.statusText}`);
-            }
-            gameData = await response.json();
-            console.log("Local API success for Mode B");
+          const response = await fetch("/api/game/mode2/question");
+          if (!response.ok) {
+            throw new Error(
+              `API request failed: ${response.status} ${response.statusText}`
+            );
           }
-          
+          gameData = await response.json();
           correctAnswer = gameData.isRealReview; // true if real, false if AI
           options = ["real", "ai"];
         }
 
-        const payload = {
+        socket.emit("host:start_round", {
           roundId,
           mode,
           correctAnswer,
           options,
           gameData,
-          // Prefer computing roundEndsAt on the server and including it in server:round_started
-          // roundEndsAt: new Date(Date.now() + 30_000).toISOString()
-        };
-        console.log("useGameActions:startRound emit host:start_round", payload);
-        socket.emit("host:start_round", payload);
+        });
       } catch (error) {
         console.error("Failed to start round:", error);
       }
@@ -169,16 +75,16 @@ export function useGameActions() {
   const submitAnswer = useCallback(
     (choice: boolean | string) => {
       if (!socket || !currentRoundIdRef.current) {
-        console.error("No socket connection or active round to submit answer to");
+        console.error(
+          "No socket connection or active round to submit answer to"
+        );
         return;
       }
 
-      const payload = {
+      socket.emit("player:submit_answer", {
         roundId: currentRoundIdRef.current,
         choice,
-      };
-      console.log("useGameActions:submitAnswer emit player:submit_answer", payload);
-      socket.emit("player:submit_answer", payload);
+      });
     },
     [socket]
   );
@@ -189,11 +95,6 @@ export function useGameActions() {
     }
     currentRoundIdRef.current = null;
     playerIdRef.current = null;
-    
-    // Clear stored game mode when leaving game
-    if (typeof window !== "undefined") {
-      localStorage.removeItem("selectedGameMode");
-    }
   }, [socket]);
 
   return {
