@@ -11,8 +11,8 @@ const ROUND_DURATION_MS = Number(process.env.ROUND_DURATION_MS || 20000);
 
 const app = express();
 const server = https.createServer({
-  key: fs.readFileSync('/etc/letsencrypt/live/profaganda.hodgman.net/privkey.pem'),
-  cert: fs.readFileSync('/etc/letsencrypt/live/profaganda.hodgman.net/fullchain.pem')
+  key: fs.readFileSync('/etc/letsencrypt/live/socket.hodgman.net/privkey.pem'),
+  cert: fs.readFileSync('/etc/letsencrypt/live/socket.hodgman.net/fullchain.pem')
 }, app);
 const io = new Server(server, {
   cors: { origin: '*' }
