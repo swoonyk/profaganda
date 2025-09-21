@@ -22,8 +22,8 @@ if (process.env.NODE_ENV === 'production') {
   try {
     if (fs.existsSync('/etc/letsencrypt/live/profaganda.hodgman.net/privkey.pem')) {
       server = https.createServer({
-        key: fs.readFileSync('/etc/letsencrypt/live/profaganda.hodgman.net/privkey.pem'),
-        cert: fs.readFileSync('/etc/letsencrypt/live/profaganda.hodgman.net/fullchain.pem')
+        key: fs.readFileSync('/etc/letsencrypt/live/socket.hodgman.net/privkey.pem'),
+        cert: fs.readFileSync('/etc/letsencrypt/live/socket.hodgman.net/fullchain.pem')
       }, app);
     } else {
       console.log('SSL certificates not found, falling back to HTTP');
