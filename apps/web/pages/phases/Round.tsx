@@ -1,6 +1,6 @@
 import React from "react";
 import { Button } from "components/ui/Button";
-import { Player } from "pages/gameWindow";
+import { Player } from "pages/GameWindow";
 
 interface RoundProps {
   players: Player[];

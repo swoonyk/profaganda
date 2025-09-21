@@ -67,7 +67,7 @@ export default function Home({ onStartLobby }: HomeProps) {
               setName("");
             }}
             variant="secondary"
-            className="buttons"
+            className="back"
           >
             Back
           </Button>
