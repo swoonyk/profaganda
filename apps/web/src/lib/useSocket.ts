@@ -7,7 +7,7 @@ let socket: Socket | null = null;
 export function useSocket(): Socket | null {
   const [isClient, setIsClient] = useState(false);
   
-  const url = 'https://socket.hodgman.net'; // Use environment variable or default URL
+  const url = process.env.NEXT_PUBLIC_SOCKET_SERVER_URL;
 
   useEffect(() => {
     setIsClient(true);
