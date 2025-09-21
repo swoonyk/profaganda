@@ -2,6 +2,7 @@ import React from "react";
 import Home from "./phases/Home";
 import Lobby from "./phases/Lobby";
 import Round from "./phases/Round";
+import RoundMode2 from "./phases/RoundMode2";
 import Leaderboard from "./phases/Leaderboard";
 import End from "./phases/End";
 import { useGameState } from "@/lib/useGameState";
@@ -29,6 +30,8 @@ export default function GameWindow({ muted, toggleMute }: GameWindowProps) {
     partyId,
     connected,
     setGameState,
+    gameMode,
+    gameData,
   } = useGameState();
 
   const { joinGame, startRound, submitAnswer, leaveGame } = useGameActions();
@@ -85,7 +88,11 @@ export default function GameWindow({ muted, toggleMute }: GameWindowProps) {
       return <Lobby muted={muted} toggleMute={toggleMute} />;
 
     case "round":
-      return <Round muted={muted} toggleMute={toggleMute} />;
+      return gameMode === "B" ? (
+        <RoundMode2 muted={muted} toggleMute={toggleMute} gameData={gameData} />
+      ) : (
+        <Round muted={muted} toggleMute={toggleMute} />
+      );
 
     case "leaderboard":
       return <Leaderboard muted={muted} toggleMute={toggleMute} />;

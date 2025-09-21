@@ -13,6 +13,7 @@ export default function Lobby({ muted, toggleMute }: LobbyProps) {
   const { players, partyId } = useGameState();
   const { startRound, leaveGame } = useGameActions();
   const [copied, setCopied] = useState(false);
+  const [selectedMode, setSelectedMode] = useState<"A" | "B">("A");
   const maxPlayers = 4;
 
   const handleCopy = () => {
@@ -89,6 +90,27 @@ export default function Lobby({ muted, toggleMute }: LobbyProps) {
           </div>
         </div>
 
+        {/* Game Mode Selection */}
+        <div className="mode-selection">
+          <h3>Select Game Mode</h3>
+          <div className="mode-options">
+            <div 
+              className={`mode-option ${selectedMode === "A" ? "selected" : ""}`}
+              onClick={() => setSelectedMode("A")}
+            >
+              <h4>Mode 1: Guess the Professor</h4>
+              <p>Given a review, guess which professor it's about</p>
+            </div>
+            <div 
+              className={`mode-option ${selectedMode === "B" ? "selected" : ""}`}
+              onClick={() => setSelectedMode("B")}
+            >
+              <h4>Mode 2: Spot the Fake</h4>
+              <p>Given a professor, guess which review is AI-generated</p>
+            </div>
+          </div>
+        </div>
+
         <div className="buttons row">
           <Button variant="secondary" onClick={leaveGame}>
             <svg
@@ -106,7 +128,7 @@ export default function Lobby({ muted, toggleMute }: LobbyProps) {
             </svg>
             <span>Back</span>
           </Button>
-          <Button onClick={() => startRound("A")}>
+          <Button onClick={() => startRound(selectedMode)}>
             <svg
               xmlns="http://www.w3.org/2000/svg"
               width="24"
@@ -120,9 +142,8 @@ export default function Lobby({ muted, toggleMute }: LobbyProps) {
             >
               <path d="M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z"></path>
             </svg>
-            <span>Start!</span>
+            <span>Start {selectedMode === "A" ? "Mode 1" : "Mode 2"}!</span>
           </Button>
-          {/* change this later to take the variable for the round since its definable */}
         </div>
       </div>
     </main>

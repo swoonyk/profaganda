@@ -18,6 +18,8 @@ export interface GameState {
   partyId?: string;
   connected: boolean;
   playerId?: string;
+  gameMode?: "A" | "B";
+  gameData?: any;
 }
 
 export function useGameState() {
@@ -69,8 +71,8 @@ export function useGameState() {
     // Round started
     socket.on(
       "server:round_started",
-      ({ roundId, options }: { roundId: string; options: string[] }) =>
-        setGameState((prev) => ({ ...prev, phase: "round", roundId, options }))
+      ({ roundId, options, mode, gameData }: { roundId: string; options: string[]; mode?: "A" | "B"; gameData?: any }) =>
+        setGameState((prev) => ({ ...prev, phase: "round", roundId, options, gameMode: mode, gameData }))
     );
 
     // Round results

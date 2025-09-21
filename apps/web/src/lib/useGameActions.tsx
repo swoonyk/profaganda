@@ -63,6 +63,7 @@ export function useGameActions() {
           mode,
           correctAnswer,
           options,
+          gameData,
         });
       } catch (error) {
         console.error("Failed to start round:", error);
