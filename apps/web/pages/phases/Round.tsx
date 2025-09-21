@@ -1,24 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { Button } from "components/ui/Button";
 import { useGameState } from "@/lib/useGameState";
+import { useGameActions } from "@/lib/useGameActions";
 
-interface RoundProps {
-  roundNumber: number;
-  options: string[];
-  onSubmitAnswer: (choice: string | boolean) => void;
-  duration?: number;
-}
+export default function Round() {
+  const { players, roundNumber, options = [] } = useGameState();
+  const { submitAnswer } = useGameActions();
+  const [timeLeft, setTimeLeft] = useState(30);
 
-export default function Round({
-  roundNumber,
-  options,
-  onSubmitAnswer,
-  duration = 30,
-}: RoundProps) {
-  const { players } = useGameState(); // live scores from server
-  const [timeLeft, setTimeLeft] = useState(duration);
-
-  // Countdown timer
   useEffect(() => {
     const interval = setInterval(() => {
       setTimeLeft((prev) => {
@@ -29,28 +18,17 @@ export default function Round({
         return prev - 1;
       });
     }, 1000);
-
     return () => clearInterval(interval);
   }, []);
 
-  const handleAnswer = (choice: string | boolean) => {
-    onSubmitAnswer(choice);
-  };
-
   return (
     <div className="round">
-      {/* Header with timer and round number */}
       <div className="header">
         <p>Time left: {timeLeft} secs</p>
-        <p>
-          Question {roundNumber} <span className="slash">/</span> 5
-        </p>
-        <p style={{ fontSize: '12px', color: '#666' }}>
-          Players in game: {players.length}
-        </p>
+        <p>Question {roundNumber} / 5</p>
+        <p style={{ fontSize: 12, color: "#666" }}>Players: {players.length}</p>
       </div>
 
-      {/* Optional scoreboard */}
       <div className="scoreboard">
         {players.map((p) => (
           <p key={p.name}>
@@ -59,16 +37,14 @@ export default function Round({
         ))}
       </div>
 
-      {/* Quote / question placeholder */}
       <div className="panel">
-        <p>Quote is here</p>
+        <p>Quote goes here</p>
       </div>
 
-      {/* Option buttons */}
       <ul>
         {options.map((opt, i) => (
           <li key={i}>
-            <Button onClick={() => handleAnswer(opt)}>{opt}</Button>
+            <Button onClick={() => submitAnswer(opt)}>{opt}</Button>
           </li>
         ))}
       </ul>

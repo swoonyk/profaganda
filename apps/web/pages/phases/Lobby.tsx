@@ -1,34 +1,19 @@
 import { Button } from "components/ui/Button";
 import React, { useState } from "react";
-import { Player } from "../gameWindow";
+import { useGameState } from "@/lib/useGameState";
+import { useGameActions } from "@/lib/useGameActions";
 
-interface LobbyProps {
-  players: Player[];
-  maxPlayers?: number;
-  joinCode?: string;
-  onStart: () => void;
-  onBack: () => void;
-}
-
-export default function Lobby({
-  players,
-  maxPlayers = 4,
-  joinCode = "ABC123",
-  onStart,
-  onBack,
-}: LobbyProps) {
+export default function Lobby() {
+  const { players, partyId } = useGameState();
+  const { startRound, leaveGame } = useGameActions();
   const [copied, setCopied] = useState(false);
+  const maxPlayers = 4;
 
   const handleCopy = () => {
-    navigator.clipboard
-      .writeText(joinCode)
-      .then(() => {
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000); // reset after 2s
-      })
-      .catch(() => {
-        alert("Failed to copy code");
-      });
+    navigator.clipboard.writeText(partyId || "").then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
   };
 
   return (
@@ -37,7 +22,6 @@ export default function Lobby({
         <h2>
           Players ({players.length}/{maxPlayers})
         </h2>
-
         <div className="player-list">
           {players.map((p) => (
             <div
@@ -48,7 +32,6 @@ export default function Lobby({
               {p.yourself && <p>(you)</p>}
             </div>
           ))}
-
           {Array.from({ length: maxPlayers - players.length }).map((_, i) => (
             <div key={i} className="player waiting">
               <p>Waiting</p>
@@ -60,25 +43,20 @@ export default function Lobby({
       <div className="panel right">
         <div className="top">
           <h2>Join code</h2>
-
           <div className="code-wrapper">
-            <p className="code">{joinCode}</p>
-            <Button
-              variant="tertiary"
-              onClick={handleCopy}
-              className="copy-btn"
-            >
+            <p className="code">{partyId || "ABC123"}</p>
+            <Button variant="tertiary" onClick={handleCopy}>
               {copied ? "Copied!" : "Copy"}
             </Button>
           </div>
         </div>
 
         <div className="buttons row">
-          <Button variant="secondary" className="back" onClick={onBack}>
+          <Button variant="secondary" onClick={leaveGame}>
             Back
           </Button>
-
-          <Button onClick={onStart}>Start!</Button>
+          <Button onClick={() => startRound("A")}>Start!</Button>
+          {/* change this later to take the variable for the round since its definable */}
         </div>
       </div>
     </main>
