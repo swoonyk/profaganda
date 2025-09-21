@@ -308,10 +308,31 @@ button:disabled {
 
 .round .panel {
   width: 100%;
+  position: relative;
 }
 
 .round .panel p {
   font-size: 28px;
+  font-family: "Cherry Cream Soda", system-ui;
+}
+
+.round .panel::before {
+  content: '"';
+  position: absolute;
+  top: 0;
+  left: 0;
+  font-size: 150px;
+  opacity: 20%;
+  font-family: "Cherry Cream Soda", system-ui;
+}
+
+.round .panel::after {
+  content: '"';
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  font-size: 150px;
+  opacity: 20%;
   font-family: "Cherry Cream Soda", system-ui;
 }
 
@@ -334,4 +355,20 @@ button:disabled {
 .round .option:active {
   box-shadow: 0 4px 0 #a6a6a6;
   transform: translateY(2px);
+}
+
+.round .option.correct,
+.round .option.correct:hover,
+.round .option.correct:active {
+  border: 2px solid #0ad6a1;
+  box-shadow: 0 6px 0 #0ad6a1;
+  transform: none;
+}
+
+.round .option.incorrect,
+.round .option.incorrect:hover,
+.round .option.incorrect:active {
+  border: 2px solid #ff5d5d;
+  box-shadow: 0 6px 0 #ff5d5d;
+  transform: none;
 }
